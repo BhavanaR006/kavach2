@@ -277,12 +277,12 @@ async def run_demo():
     async with async_session_factory() as db:
         # Step 1: Create/get demo user with trusted contact
         user = await _get_or_create_user(db, demo_phone)
-        user.name = "Meena Sharma"
+        user.name = "Meena"
         user.language_preference = "hi"
-        user.age = 55
+        user.age = 54
         user.is_first_time_user = True
         user.trusted_contact_phone = demo_trusted
-        user.trusted_contact_name = "Rahul Sharma"
+        user.trusted_contact_name = "Son (Trusted Contact)"
 
         # Step 2: Create high-risk transaction
         transaction = Transaction(
@@ -326,7 +326,7 @@ async def run_demo():
 
         return {
             "status": "demo_completed",
-            "scenario": "Meena Sharma - Digital Arrest Scam Prevention",
+            "scenario": "Meena (54, Lucknow) - Digital Arrest Scam Prevention",
             "steps": [
                 {
                     "step": 1,

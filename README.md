@@ -91,12 +91,12 @@ curl -X POST http://localhost:8000/demo
 ```
 
 **What happens internally:**
-1. Creates user "Meena Sharma" (age 55, first-time digital user, Hindi-speaking)
+1. Creates user "Meena" (age 54, first-time digital user, Hindi-speaking)
 2. Creates a ₹40,000 transaction to an unknown recipient
 3. Risk scorer flags it as CRITICAL (score: 85/100) due to: new recipient +30, amount >₹10K +20, first-time user +20, age >50 +15
 4. Sends detection question in Hindi to Meena
 5. Simulates Meena confirming she is under pressure (reply "1")
-6. Alerts trusted contact (son Rahul) via WhatsApp/SMS
+6. Alerts trusted contact (her son) via WhatsApp/SMS
 7. Executes full recovery flow: calming message → 6 recovery steps → complaint template → 1930 helpline info
 8. Logs incident, marks transaction as BLOCKED
 
@@ -104,7 +104,7 @@ curl -X POST http://localhost:8000/demo
 ```json
 {
   "status": "demo_completed",
-  "scenario": "Meena Sharma - Digital Arrest Scam Prevention",
+  "scenario": "Meena (54, Lucknow) - Digital Arrest Scam Prevention",
   "steps": [
     {"step": 1, "action": "Transaction intercepted", "amount": "₹40,000", "risk_score": 85, "risk_level": "CRITICAL"},
     {"step": 2, "action": "Detection question sent to user", "message": "⚠️ Kavach ने देखा..."},
@@ -278,7 +278,7 @@ Kavach 2.0 intercepts UPI payment intent, runs a conversational coercion check w
 - Auto-generates cybercrime.gov.in complaint templates
 - Graceful degradation — runs fully without any API keys
 
-**The Problem:** ₹4.8B lost annually to digital fraud in India. 82% of fraud is reported via messaging platforms. 71% of financial fraud starts from a WhatsApp message or call.
+**The Problem:** ₹22,500 Cr lost to cyber fraud in 2025 alone. 28 Lakh+ fraud cases filed (+24% YoY). 1 in 5 UPI users have been scammed. The primary weapon is isolation — victims are kept on calls for hours, forbidden to contact anyone.
 
 **Our Solution:** Protection where the people already are — inside WhatsApp.
 
@@ -428,7 +428,7 @@ User sends message
 | `BHASHINI_USER_ID` | BHASHINI user | No — uses pre-translated strings |
 | `DATABASE_URL` | DB connection | No — defaults to SQLite |
 
-**Important: The entire prototype runs without ANY API keys.** All external services degrade gracefully — messages are logged to console, scam detection uses keyword matching (92% accuracy), translations use pre-built strings in 5 languages.
+**Important: The entire prototype runs without ANY API keys.** All external services degrade gracefully — messages are logged to console, scam detection uses keyword matching, translations use pre-built strings in 5 languages.
 
 ---
 
@@ -522,7 +522,7 @@ kavach2/
 
 ## License
 
-Built for Kavach Hackathon 2.0 by Bhavana R (Team Bloom).
+Built for ScriptedBy{Her} 2.0 (Meesho) by Bhavana R (Team Bloom).
 
 ---
 
