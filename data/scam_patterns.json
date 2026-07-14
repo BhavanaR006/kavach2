@@ -1,0 +1,196 @@
+{
+  "version": "1.0",
+  "description": "Kavach 2.0 scam pattern database - seeded from I4C and public domain sources",
+  "last_updated": "2024-06-01",
+  "patterns": [
+    {
+      "text": "This is CBI calling. A case has been registered against your Aadhaar number. You must pay a fine immediately or face arrest.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Yeh CBI se bol rahe hain. Aapke Aadhaar pe ek case register hua hai. Turant fine pay karein warna arrest ho jaenge.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "You are under digital arrest. Do not disconnect this video call. Any attempt to contact anyone will result in immediate physical arrest.",
+      "type": "DIGITAL_ARREST",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Aap digital arrest mein hain. Video call disconnect mat karein. Kisi ko bataaya toh turant arrest hoga.",
+      "type": "DIGITAL_ARREST",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "మీ ఆధార్ నంబర్ పై కేసు నమోదైంది. వెంటనే జరిమానా చెల్లించండి లేకపోతే అరెస్ట్ అవుతారు.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "te",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "உங்கள் ஆதார் எண்ணில் வழக்கு பதிவு செய்யப்பட்டுள்ளது. உடனடியாக அபராதம் செலுத்தவும் இல்லையெனில் கைது செய்யப்படுவீர்கள்.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "ta",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Your KYC has expired. Your bank account will be frozen within 24 hours. Click this link to update immediately.",
+      "type": "KYC_FRAUD",
+      "language": "en",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Aapka KYC expire ho gaya hai. 24 ghante mein aapka bank account freeze ho jaega. Abhi update karein.",
+      "type": "KYC_FRAUD",
+      "language": "hi",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "RBI se bol rahe hain. Aapka account suspicious transaction ke liye flag hua hai. Verify karne ke liye OTP bhejein.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "This is RBI. Your account has been flagged for suspicious activity. Share your OTP to verify your identity.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Congratulations! You have won ₹25,00,000 in the KBC lottery. Pay ₹5,000 processing fee to claim your prize.",
+      "type": "FINANCIAL_DEMAND",
+      "language": "en",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Badhai ho! Aapne KBC lottery mein ₹25 lakh jeete hain. Prize claim karne ke liye ₹5,000 processing fee pay karein.",
+      "type": "FINANCIAL_DEMAND",
+      "language": "hi",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Your Aadhaar card has been used in money laundering. This is the Narcotics Department. Transfer ₹50,000 to secure account immediately.",
+      "type": "DIGITAL_ARREST",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Aapke Aadhaar card ka istemal money laundering mein hua hai. Yeh Narcotics Department se hai. ₹50,000 secure account mein transfer karein.",
+      "type": "DIGITAL_ARREST",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Work from home opportunity! Invest ₹10,000 and earn ₹1,00,000 per month. Limited seats available. Join now!",
+      "type": "FINANCIAL_DEMAND",
+      "language": "en",
+      "severity": "MEDIUM",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Ghar baithe kamayein! ₹10,000 invest karein aur ₹1 lakh mahina kamayein. Limited seats. Abhi join karein!",
+      "type": "FINANCIAL_DEMAND",
+      "language": "hi",
+      "severity": "MEDIUM",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Kisi ko mat batana. Yeh confidential investigation hai. Agar kisi ko bataaya toh aapki family ko bhi arrest karenge.",
+      "type": "ISOLATION",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Do not tell anyone about this call. This is a confidential investigation. If you inform anyone, your family will also be arrested.",
+      "type": "ISOLATION",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "ఇది పోలీస్ స్టేషన్ నుండి. మీ పేరు మీద ఒక FIR ఫైల్ అయింది. వెంటనే ₹30,000 చెల్లించండి.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "te",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "இது போலீஸ் ஸ்டேஷனிலிருந்து. உங்கள் பெயரில் FIR பதிவு செய்யப்பட்டுள்ளது. உடனடியாக ₹30,000 செலுத்தவும்.",
+      "type": "AUTHORITY_IMPERSONATION",
+      "language": "ta",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Sirf 10 minute hain aapke paas. Agar abhi payment nahi ki toh arrest warrant issue ho jaega. Jaldi karein!",
+      "type": "URGENCY",
+      "language": "hi",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "You have only 10 minutes. If payment is not made now, an arrest warrant will be issued. Hurry!",
+      "type": "URGENCY",
+      "language": "en",
+      "severity": "HIGH",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Customs department se call hai. Aapke parcel mein drugs paaye gaye hain. Case register hone se bachne ke liye ₹2 lakh transfer karein.",
+      "type": "DIGITAL_ARREST",
+      "language": "hi",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "This is customs. Drugs have been found in a parcel addressed to you. Transfer ₹2 lakhs to avoid case registration.",
+      "type": "DIGITAL_ARREST",
+      "language": "en",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "আপনার আধার কার্ড দিয়ে মানি লন্ডারিং হয়েছে। এটা CBI থেকে বলছি। ₹50,000 জমা দিন নাহলে গ্রেফতার হবেন।",
+      "type": "DIGITAL_ARREST",
+      "language": "bn",
+      "severity": "CRITICAL",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Pre-approved loan of ₹5,00,000 for you! Just pay ₹3,000 processing charge to activate. Offer valid today only.",
+      "type": "FINANCIAL_DEMAND",
+      "language": "en",
+      "severity": "MEDIUM",
+      "source": "I4C Database"
+    },
+    {
+      "text": "Aapke liye ₹5 lakh ka pre-approved loan hai! Sirf ₹3,000 processing charge pay karein. Aaj hi offer khatam.",
+      "type": "FINANCIAL_DEMAND",
+      "language": "hi",
+      "severity": "MEDIUM",
+      "source": "I4C Database"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  kavach-app:
+    build: .
+    container_name: kavach2-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - kavach-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: kavach2-postgres
+    environment:
+      POSTGRES_USER: kavach
+      POSTGRES_PASSWORD: kavach_secure_pass
+      POSTGRES_DB: kavach2
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kavach -d kavach2"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - kavach-network
+
+volumes:
+  sqlite_data:
+  postgres_data:
+
+networks:
+  kavach-network:
+    driver: bridge
