@@ -19,9 +19,14 @@ from app.config import settings
 def _get_database_url() -> str:
     """Resolve the database URL, handling Vercel's read-only filesystem."""
     url = settings.DATABASE_URL
-    # On Vercel (serverless), SQLite must use /tmp
-    if "VERCEL" in os.environ and "sqlite" in url:
-        url = "sqlite+aiosqlite:///tmp/kavach.db"
+    # On Vercel/serverless, SQLite must use /tmp (only writable directory)
+    is_serverless = (
+        "VERCEL" in os.environ
+        or "AWS_LAMBDA_FUNCTION_NAME" in os.environ
+        or os.environ.get("ENVIRONMENT") == "vercel"
+    )
+    if is_serverless and "sqlite" in url:
+        url = "sqlite+aiosqlite:////tmp/kavach.db"
     return url
 
 
