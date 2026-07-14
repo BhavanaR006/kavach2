@@ -12,8 +12,11 @@ from pydantic import Field
 class Settings(BaseSettings):
     """Kavach 2.0 application settings loaded from environment."""
 
-    # Anthropic Claude API
+    # Anthropic Claude API (paid - optional)
     ANTHROPIC_API_KEY: str = Field(default="", description="Anthropic API key for Claude")
+
+    # Google Gemini API (FREE - recommended for demo)
+    GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key (free tier)")
 
     # WhatsApp Business Cloud API
     WHATSAPP_ACCESS_TOKEN: str = Field(default="", description="Meta WhatsApp access token")
