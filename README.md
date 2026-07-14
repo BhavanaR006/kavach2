@@ -2,7 +2,7 @@
 
 > WhatsApp-Native Agentic AI Fraud Shield for India
 
-**Team Bloom** | Bhavana (Backend & AI/ML) · Tanay (Frontend & Product) · Garvit (Data & Security)
+**Team Bloom** | Bhavana R — Solo Developer (Full Stack + AI/ML)
 
 **Live URL:** https://kavach2-theta.vercel.app  
 **GitHub:** https://github.com/BhavanaR006/kavach2
@@ -522,7 +522,7 @@ kavach2/
 
 ## License
 
-Built for Kavach Hackathon 2.0 by Team Bloom.
+Built for Kavach Hackathon 2.0 by Bhavana R (Team Bloom).
 
 ---
 
