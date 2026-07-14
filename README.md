@@ -311,6 +311,37 @@ kavach2/
 
 ---
 
+## Note on WhatsApp Integration
+
+This prototype is **architecturally designed** for WhatsApp Business Cloud API integration. The full webhook handler, message parsing, and response delivery logic is implemented in `app/integrations/whatsapp.py`.
+
+However, for this hackathon demo, **WhatsApp Business API access was not available** (requires Meta business verification which takes several days). The system therefore operates in **graceful degradation mode**:
+
+- All messages that would be sent via WhatsApp are **logged to console** instead
+- The `/demo` endpoint proves the complete end-to-end flow works
+- When WhatsApp credentials are configured, the system switches to live delivery **with zero code changes**
+
+In production deployment:
+1. Register at [Meta Business Suite](https://business.facebook.com)
+2. Apply for WhatsApp Business API access
+3. Configure webhook URL to `/webhook/whatsapp`
+4. Add access token to environment variables
+5. All existing code immediately works with real WhatsApp delivery
+
+---
+
+## Live Deployment
+
+**Production URL:** https://kavach2-theta.vercel.app
+
+| Endpoint | Try it |
+|----------|--------|
+| Health check | `curl https://kavach2-theta.vercel.app/health` |
+| Full demo | `curl -X POST https://kavach2-theta.vercel.app/demo` |
+| Transaction intercept | `curl -X POST https://kavach2-theta.vercel.app/api/transaction/initiate -H "Content-Type: application/json" -d '{"user_phone":"+919999999999","recipient_phone":"+917777777777","amount":40000}'` |
+
+---
+
 ## License
 
 Built for Kavach Hackathon 2.0 by Team Bloom.
