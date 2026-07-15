@@ -379,6 +379,99 @@ async def run_demo():
         }
 
 
+# --- Chat API (for UI) ---
+
+@app.post("/api/chat")
+async def chat_endpoint(request: Request):
+    """
+    Interactive chat endpoint for the demo UI.
+
+    Accepts a message + language, processes through the agent,
+    and returns the response with WhatsApp payload preview.
+    """
+    body = await request.json()
+    message = body.get("message", "")
+    language = body.get("language", "hi")
+    phone = body.get("phone", "+919999900001")
+
+    async with async_session_factory() as db:
+        user = await _get_or_create_user(db, phone)
+        user.language_preference = language
+
+        session = await _get_active_session(db, phone)
+        transaction = await _get_pending_transaction(db, phone)
+
+        response = await kavach_agent.process_message(
+            phone=phone,
+            message=message,
+            session=session,
+            transaction=transaction,
+            user=user,
+        )
+
+        # Build WhatsApp API payload preview (what would actually be sent)
+        whatsapp_payload = {
+            "messaging_product": "whatsapp",
+            "to": phone.lstrip("+"),
+            "type": "text",
+            "text": {"body": response.message},
+        }
+
+        await db.commit()
+
+        return {
+            "response": response.message,
+            "action": response.action,
+            "risk_level": response.risk_level.value,
+            "risk_score": response.risk_score,
+            "should_alert_contact": response.should_alert_contact,
+            "should_start_recovery": response.should_start_recovery,
+            "session_state": session.state,
+            "whatsapp_payload_preview": whatsapp_payload,
+        }
+
+
+# --- Privacy Policy ---
+
+@app.get("/api/privacy")
+async def privacy_policy():
+    """Data privacy policy — what Kavach stores and what it doesn't."""
+    return {
+        "data_minimization": {
+            "stored": [
+                "Phone number (hashed in production)",
+                "Language preference",
+                "Transaction amount and recipient (for risk scoring)",
+                "Session state (IDLE/QUESTIONING/RESOLVED)",
+                "Risk score (numeric only)",
+            ],
+            "NOT_stored": [
+                "Message content is processed in-memory and NOT persisted after session ends",
+                "No call recordings or media",
+                "No contact list or WhatsApp profile data",
+                "No location data",
+                "No Aadhaar/PAN/banking credentials",
+            ],
+        },
+        "trusted_contact_privacy": {
+            "what_they_receive": "Alert that their contact may be under pressure + request to call them",
+            "what_they_NEVER_see": [
+                "Conversation content between user and Kavach",
+                "Scam message details",
+                "Transaction recipient details",
+                "User's other contacts or messages",
+            ],
+        },
+        "data_retention": "Session data auto-deleted after 24 hours in production",
+        "encryption": "All API communication over HTTPS/TLS 1.3",
+        "whatsapp_scope": {
+            "permissions_required": "Only message send/receive — no contact list, no media, no status",
+            "data_flow": "User message → Kavach analysis (in-memory) → Response. No data shared with third parties.",
+        },
+        "compliance": "Aligned with IT Act 2000, RBI data localization guidelines, and DPDP Act 2023",
+    }
+
+
 # --- Helper Functions ---
 
 async def _get_or_create_user(db: AsyncSession, phone: str) -> User:

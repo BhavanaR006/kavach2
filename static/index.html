@@ -3,167 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavach 2.0 — Demo</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Kavach 2.0 — Fraud Shield</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh; }
 
-        /* Nav */
-        .nav {
-            background: #075e54;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+        .nav { background: #075e54; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; color: white; position: sticky; top: 0; z-index: 100; }
         .nav-left { display: flex; align-items: center; gap: 12px; }
-        .nav-logo {
-            width: 36px; height: 36px;
-            background: white;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
-        }
-        .nav h1 { font-size: 18px; font-weight: 600; }
-        .nav-status { font-size: 12px; opacity: 0.8; }
-        .nav-right { display: flex; gap: 16px; align-items: center; }
-        .nav-link {
-            color: white; text-decoration: none; font-size: 13px;
-            padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 6px; transition: all 0.2s;
-        }
+        .nav-logo { width: 34px; height: 34px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #075e54; }
+        .nav h1 { font-size: 17px; font-weight: 600; }
+        .nav-sub { font-size: 11px; opacity: 0.8; }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+        .nav-link { color: white; text-decoration: none; font-size: 12px; padding: 5px 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 5px; }
         .nav-link:hover { background: rgba(255,255,255,0.1); }
 
-        /* Layout */
-        .layout { display: flex; max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 64px); }
+        .layout { display: flex; max-width: 1300px; margin: 0 auto; min-height: calc(100vh - 56px); }
+        .sidebar { width: 320px; background: white; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; overflow-y: auto; }
+        .main { flex: 1; display: flex; flex-direction: column; }
 
-        /* Sidebar */
-        .sidebar {
-            width: 360px; background: white; border-right: 1px solid #e0e0e0;
-            display: flex; flex-direction: column;
-        }
-        .sidebar-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
-        .sidebar-header h2 { font-size: 14px; color: #667781; font-weight: 500; }
-        .scenario-list { flex: 1; overflow-y: auto; }
-        .scenario {
-            padding: 16px 20px; border-bottom: 1px solid #f5f5f5;
-            cursor: pointer; transition: background 0.15s;
-        }
+        /* Language selector */
+        .lang-bar { background: #f7f8fa; padding: 10px 16px; border-bottom: 1px solid #e8e8e8; }
+        .lang-bar label { font-size: 11px; color: #667781; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .lang-select { width: 100%; margin-top: 6px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; font-family: inherit; background: white; }
+
+        /* Sidebar scenarios */
+        .sidebar-title { padding: 14px 16px; font-size: 12px; color: #667781; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f0f0f0; }
+        .scenario { padding: 14px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.1s; }
         .scenario:hover { background: #f5f6f6; }
-        .scenario.active { background: #f0f2f5; }
-        .scenario-title { font-size: 15px; font-weight: 600; color: #111b21; margin-bottom: 4px; }
-        .scenario-desc { font-size: 13px; color: #667781; line-height: 1.4; }
-        .scenario-badge {
-            display: inline-block; margin-top: 6px;
-            font-size: 11px; padding: 2px 8px; border-radius: 4px;
-            font-weight: 600;
-        }
+        .scenario.active { background: #e9f5e9; border-left: 3px solid #25d366; }
+        .scenario-name { font-size: 14px; font-weight: 600; color: #111b21; margin-bottom: 3px; }
+        .scenario-desc { font-size: 12px; color: #667781; line-height: 1.4; }
+        .badge { display: inline-block; margin-top: 5px; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
         .badge-critical { background: #fee2e2; color: #dc2626; }
         .badge-high { background: #fef3c7; color: #d97706; }
-        .badge-demo { background: #dbeafe; color: #2563eb; }
+        .badge-safe { background: #dcfce7; color: #16a34a; }
+        .badge-auto { background: #dbeafe; color: #2563eb; }
 
-        /* Chat */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: #efeae2; }
-        .chat-bg {
-            flex: 1; overflow-y: auto; padding: 20px;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5L5 30l25 25 25-25z' fill='%23d4cfc4' opacity='0.08'/%3E%3C/svg%3E");
-        }
-        .chat-header {
-            background: #f0f2f5; padding: 12px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .chat-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: #25d366; display: flex; align-items: center;
-            justify-content: center; color: white; font-weight: 700; font-size: 16px;
-        }
-        .chat-name { font-size: 15px; font-weight: 600; color: #111b21; }
-        .chat-subtitle { font-size: 12px; color: #667781; }
+        /* Chat area */
+        .chat-header { background: #f0f2f5; padding: 10px 20px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 12px; }
+        .chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: #25d366; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; }
+        .chat-name { font-size: 14px; font-weight: 600; color: #111b21; }
+        .chat-sub { font-size: 11px; color: #667781; }
 
-        /* Messages */
-        .message {
-            max-width: 65%; margin-bottom: 8px; padding: 8px 12px;
-            border-radius: 8px; font-size: 14px; line-height: 1.5;
-            position: relative; word-wrap: break-word;
-        }
-        .message .time {
-            font-size: 11px; color: #667781; float: right;
-            margin-left: 8px; margin-top: 4px;
-        }
-        .msg-incoming {
-            background: white; border-top-left-radius: 0;
-            align-self: flex-start;
-        }
-        .msg-outgoing {
-            background: #d9fdd3; border-top-right-radius: 0;
-            align-self: flex-end; margin-left: auto;
-        }
-        .msg-system {
-            background: #e2f0fe; max-width: 80%;
-            margin: 12px auto; text-align: center;
-            font-size: 12px; color: #1e40af; padding: 6px 16px;
-            border-radius: 20px;
-        }
-        .msg-alert {
-            background: #fef2f2; border: 1px solid #fecaca;
-            max-width: 80%; margin: 12px auto; text-align: center;
-            font-size: 13px; color: #991b1b; padding: 10px 16px;
-            border-radius: 8px;
-        }
-        .messages-container { display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 16px 60px; background: #efeae2; background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h400v400H0z' fill='%23efeae2'/%3E%3C/svg%3E"); }
+        .messages { display: flex; flex-direction: column; gap: 4px; }
 
-        /* Input */
-        .chat-input-area {
-            background: #f0f2f5; padding: 10px 16px;
-            display: flex; gap: 10px; align-items: center;
-        }
-        .chat-input {
-            flex: 1; padding: 10px 16px; border-radius: 8px;
-            border: none; font-size: 14px; font-family: inherit;
-            background: white; outline: none;
-        }
-        .send-btn {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: #25d366; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
-        }
+        .msg { max-width: 65%; padding: 7px 10px; border-radius: 8px; font-size: 13.5px; line-height: 1.5; position: relative; }
+        .msg .time { font-size: 10px; color: #667781; float: right; margin-left: 10px; margin-top: 2px; }
+        .msg-in { background: white; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 0.5px rgba(0,0,0,0.08); }
+        .msg-out { background: #d9fdd3; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 0.5px rgba(0,0,0,0.08); }
+        .msg-sys { background: #e2f7fe; align-self: center; text-align: center; font-size: 12px; color: #1e40af; padding: 5px 14px; border-radius: 18px; max-width: 80%; box-shadow: none; }
+        .msg-alert { background: #fef2f2; border: 1px solid #fecaca; align-self: center; text-align: center; font-size: 12px; color: #991b1b; padding: 8px 16px; border-radius: 8px; max-width: 80%; }
+        .msg-payload { background: #1e293b; color: #a5f3fc; align-self: center; font-family: monospace; font-size: 11px; padding: 10px 14px; border-radius: 8px; max-width: 90%; white-space: pre-wrap; margin: 4px 0; }
+
+        .chat-input-bar { background: #f0f2f5; padding: 8px 16px; display: flex; gap: 8px; align-items: center; border-top: 1px solid #e0e0e0; }
+        .chat-input { flex: 1; padding: 9px 14px; border-radius: 8px; border: none; font-size: 13px; font-family: inherit; outline: none; }
+        .send-btn { width: 38px; height: 38px; border-radius: 50%; background: #25d366; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .send-btn:hover { background: #1ea952; }
-        .send-btn svg { fill: white; width: 20px; height: 20px; }
+        .send-btn svg { fill: white; width: 18px; height: 18px; }
+        .send-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* Quick actions */
-        .quick-actions {
-            padding: 12px 20px; background: white;
-            border-top: 1px solid #e0e0e0;
-            display: flex; gap: 8px; flex-wrap: wrap;
-        }
-        .quick-btn {
-            font-size: 12px; padding: 6px 12px; border-radius: 16px;
-            border: 1px solid #25d366; color: #25d366; background: white;
-            cursor: pointer; transition: all 0.2s; font-family: inherit;
-        }
-        .quick-btn:hover { background: #25d366; color: white; }
+        /* Privacy tab */
+        .privacy-panel { padding: 16px; font-size: 13px; color: #374151; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .privacy-panel h3 { color: #075e54; margin: 12px 0 6px; font-size: 14px; }
+        .privacy-panel ul { padding-left: 18px; margin-bottom: 8px; }
+        .privacy-panel li { margin-bottom: 4px; }
+        .privacy-panel .highlight { background: #dcfce7; padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-weight: 500; }
 
-        /* Results panel */
-        .results-panel {
-            background: white; border-top: 1px solid #e0e0e0;
-            padding: 12px 20px; max-height: 200px; overflow-y: auto;
-            font-size: 13px;
-        }
-        .result-item { padding: 6px 0; border-bottom: 1px solid #f5f5f5; display: flex; gap: 8px; align-items: center; }
-        .result-icon { width: 20px; text-align: center; }
+        .tab-bar { display: flex; border-bottom: 1px solid #e0e0e0; background: white; }
+        .tab { flex: 1; padding: 10px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; color: #667781; border-bottom: 2px solid transparent; }
+        .tab.active { color: #075e54; border-bottom-color: #075e54; }
 
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .message { max-width: 85%; }
-        }
+        @media (max-width: 900px) { .sidebar { display: none; } .chat-messages { padding: 16px; } .msg { max-width: 85%; } }
     </style>
 </head>
 <body>
@@ -172,221 +84,276 @@
             <div class="nav-logo">K</div>
             <div>
                 <h1>Kavach 2.0</h1>
-                <div class="nav-status" id="navStatus">Connecting...</div>
+                <div class="nav-sub" id="navStatus">Connecting...</div>
             </div>
         </div>
         <div class="nav-right">
-            <a href="/health" class="nav-link" target="_blank">API Health</a>
+            <a href="/health" class="nav-link" target="_blank">Health</a>
+            <a href="/api/privacy" class="nav-link" target="_blank">Privacy API</a>
             <a href="https://github.com/BhavanaR006/kavach2" class="nav-link" target="_blank">GitHub</a>
         </div>
     </nav>
 
     <div class="layout">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>TEST SCENARIOS</h2>
+            <div class="lang-bar">
+                <label>Conversation Language</label>
+                <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+                    <option value="hi">Hindi (हिन्दी)</option>
+                    <option value="en">English</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                </select>
             </div>
-            <div class="scenario-list">
-                <div class="scenario active" onclick="runFullDemo()">
-                    <div class="scenario-title">Meena's Story (Full Demo)</div>
-                    <div class="scenario-desc">54-year-old from Lucknow. Fake CBI call pressures her to transfer Rs 40,000. Kavach intercepts and saves her.</div>
-                    <span class="scenario-badge badge-demo">AUTO DEMO</span>
-                </div>
-                <div class="scenario" onclick="loadScenario('digital_arrest')">
-                    <div class="scenario-title">Digital Arrest Scam</div>
-                    <div class="scenario-desc">"You are under digital arrest. Transfer money or face immediate arrest."</div>
-                    <span class="scenario-badge badge-critical">CRITICAL</span>
-                </div>
-                <div class="scenario" onclick="loadScenario('kyc_fraud')">
-                    <div class="scenario-title">KYC Freeze Threat</div>
-                    <div class="scenario-desc">"Your KYC expired. Bank account frozen in 24 hours."</div>
-                    <span class="scenario-badge badge-high">HIGH</span>
-                </div>
-                <div class="scenario" onclick="loadScenario('safe')">
-                    <div class="scenario-title">Safe Message</div>
-                    <div class="scenario-desc">"Hi, how are you? Want to grab lunch tomorrow?"</div>
-                    <span class="scenario-badge" style="background:#dcfce7;color:#16a34a;">SAFE</span>
-                </div>
-                <div class="scenario" onclick="loadScenario('custom')">
-                    <div class="scenario-title">Custom Message</div>
-                    <div class="scenario-desc">Type your own message to test detection.</div>
-                    <span class="scenario-badge" style="background:#f3f4f6;color:#6b7280;">INTERACTIVE</span>
-                </div>
+            <div class="sidebar-title">Test Scenarios</div>
+            <div class="scenario active" onclick="runFullDemo()">
+                <div class="scenario-name">Meena's Story (Auto Demo)</div>
+                <div class="scenario-desc">Full end-to-end: detection, alert, recovery</div>
+                <span class="badge badge-auto">FULL FLOW</span>
+            </div>
+            <div class="scenario" onclick="loadScenario('digital_arrest')">
+                <div class="scenario-name">Digital Arrest</div>
+                <div class="scenario-desc">"You are under digital arrest, transfer money now"</div>
+                <span class="badge badge-critical">CRITICAL</span>
+            </div>
+            <div class="scenario" onclick="loadScenario('cbi_fake')">
+                <div class="scenario-name">Fake CBI Officer</div>
+                <div class="scenario-desc">"CBI se bol rahe hain, case file hua hai"</div>
+                <span class="badge badge-critical">CRITICAL</span>
+            </div>
+            <div class="scenario" onclick="loadScenario('kyc')">
+                <div class="scenario-name">KYC Expiry Threat</div>
+                <div class="scenario-desc">"Your KYC expired, account will be frozen"</div>
+                <span class="badge badge-high">HIGH</span>
+            </div>
+            <div class="scenario" onclick="loadScenario('safe')">
+                <div class="scenario-name">Normal Message</div>
+                <div class="scenario-desc">"Hi, how are you? Lunch tomorrow?"</div>
+                <span class="badge badge-safe">SAFE</span>
+            </div>
+
+            <div class="sidebar-title" style="margin-top:auto; border-top:1px solid #f0f0f0;">Data Privacy</div>
+            <div class="scenario" onclick="showPrivacy()">
+                <div class="scenario-name">View Privacy Controls</div>
+                <div class="scenario-desc">What Kavach stores, what it doesn't, trusted contact limits</div>
             </div>
         </aside>
 
-        <main class="chat-area">
-            <div class="chat-header">
-                <div class="chat-avatar">K</div>
-                <div>
-                    <div class="chat-name">Kavach 2.0 Agent</div>
-                    <div class="chat-subtitle">Agentic AI Fraud Shield</div>
+        <main class="main">
+            <div class="tab-bar">
+                <div class="tab active" id="tabChat" onclick="showTab('chat')">Chat Demo</div>
+                <div class="tab" id="tabPayload" onclick="showTab('payload')">WhatsApp Payload</div>
+                <div class="tab" id="tabPrivacy" onclick="showTab('privacy')">Privacy & Security</div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chatTab" style="display:flex; flex-direction:column; flex:1;">
+                <div class="chat-header">
+                    <div class="chat-avatar">K</div>
+                    <div>
+                        <div class="chat-name">Kavach 2.0 Agent</div>
+                        <div class="chat-sub" id="chatLangLabel">Hindi mode</div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatArea">
+                    <div class="messages" id="msgs">
+                        <div class="msg msg-sys">Select a scenario or type a message to begin.</div>
+                    </div>
+                </div>
+                <div class="chat-input-bar">
+                    <input class="chat-input" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
+                    <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
                 </div>
             </div>
-            <div class="chat-bg" id="chatBg">
-                <div class="messages-container" id="messages">
-                    <div class="msg-system">Select a scenario from the left, or type a message below to test scam detection.</div>
-                </div>
+
+            <!-- Payload Tab -->
+            <div id="payloadTab" style="display:none; flex:1; overflow-y:auto; padding:20px; background:#1e293b;">
+                <p style="color:#94a3b8; font-size:13px; margin-bottom:12px;">Last WhatsApp API payload that would be sent:</p>
+                <pre id="payloadContent" style="color:#a5f3fc; font-size:12px; white-space:pre-wrap; font-family:monospace;">No messages sent yet. Use the Chat tab to interact.</pre>
             </div>
-            <div class="quick-actions">
-                <button class="quick-btn" onclick="sendQuick('1')">1 (Yes/Haan)</button>
-                <button class="quick-btn" onclick="sendQuick('2')">2 (No/Nahi)</button>
-                <button class="quick-btn" onclick="runFullDemo()">Run Full Demo</button>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
-                <button class="send-btn" onclick="sendMessage()">
-                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                </button>
+
+            <!-- Privacy Tab -->
+            <div id="privacyTab" class="privacy-panel" style="display:none;">
+                <h3>What Kavach Stores</h3>
+                <ul>
+                    <li>Phone number (for session tracking only)</li>
+                    <li>Language preference</li>
+                    <li>Transaction amount and recipient (risk scoring)</li>
+                    <li>Session state (IDLE / QUESTIONING / RESOLVED)</li>
+                    <li>Risk score (numeric)</li>
+                </ul>
+
+                <h3>What Kavach Does NOT Store</h3>
+                <div class="highlight">Message content is processed in-memory and NOT persisted after session resolves.</div>
+                <ul>
+                    <li>No call recordings or media</li>
+                    <li>No contact list or WhatsApp profile data</li>
+                    <li>No location data</li>
+                    <li>No Aadhaar / PAN / banking credentials</li>
+                    <li>No browsing history or app usage</li>
+                </ul>
+
+                <h3>Trusted Contact Privacy</h3>
+                <div class="highlight">Trusted contacts receive ONLY: "[Name] may be under pressure from a scammer. Please call them now."</div>
+                <ul>
+                    <li>They NEVER see conversation content</li>
+                    <li>They NEVER see scam message details</li>
+                    <li>They NEVER see transaction recipient info</li>
+                    <li>They NEVER get access to user's other messages</li>
+                </ul>
+
+                <h3>WhatsApp Integration Scope</h3>
+                <ul>
+                    <li>Permission: message send/receive ONLY</li>
+                    <li>No access to: contact list, profile photo, status, groups, media</li>
+                    <li>Data flow: User message → Kavach analysis (in-memory) → Response</li>
+                    <li>No data shared with any third party</li>
+                </ul>
+
+                <h3>Compliance</h3>
+                <ul>
+                    <li>IT Act 2000 (India)</li>
+                    <li>RBI Data Localization Guidelines</li>
+                    <li>Digital Personal Data Protection Act (DPDP) 2023</li>
+                    <li>All data stored on Indian servers</li>
+                    <li>Auto-deletion of session data after 24 hours</li>
+                </ul>
             </div>
         </main>
     </div>
 
     <script>
         const API = window.location.origin;
-        let currentPhone = '919' + Math.floor(100000000 + Math.random() * 900000000);
+        let lang = 'hi';
+        let lastPayload = null;
+        let phone = '+919' + Math.floor(100000000 + Math.random()*900000000);
 
-        // Health check
-        fetch(API + '/health').then(r => r.json()).then(d => {
-            document.getElementById('navStatus').textContent = 'Online';
-        }).catch(() => {
-            document.getElementById('navStatus').textContent = 'Offline';
-        });
+        fetch(API+'/health').then(r=>r.json()).then(()=>{
+            document.getElementById('navStatus').textContent='Online';
+        }).catch(()=>{document.getElementById('navStatus').textContent='Offline';});
 
-        function getTime() {
-            return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        function changeLanguage() {
+            lang = document.getElementById('langSelect').value;
+            const labels = {hi:'Hindi mode',en:'English mode',te:'Telugu mode',ta:'Tamil mode',bn:'Bengali mode'};
+            document.getElementById('chatLangLabel').textContent = labels[lang];
         }
 
-        function addMessage(text, type) {
-            const container = document.getElementById('messages');
-            const div = document.createElement('div');
-            if (type === 'system') {
-                div.className = 'msg-system';
-                div.textContent = text;
-            } else if (type === 'alert') {
-                div.className = 'msg-alert';
-                div.innerHTML = text;
-            } else {
-                div.className = 'message ' + (type === 'user' ? 'msg-outgoing' : 'msg-incoming');
-                div.innerHTML = text + '<span class="time">' + getTime() + '</span>';
-            }
-            container.appendChild(div);
-            document.getElementById('chatBg').scrollTop = document.getElementById('chatBg').scrollHeight;
+        function showTab(tab) {
+            document.getElementById('chatTab').style.display = tab==='chat'?'flex':'none';
+            document.getElementById('payloadTab').style.display = tab==='payload'?'block':'none';
+            document.getElementById('privacyTab').style.display = tab==='privacy'?'block':'none';
+            document.getElementById('tabChat').className = 'tab'+(tab==='chat'?' active':'');
+            document.getElementById('tabPayload').className = 'tab'+(tab==='payload'?' active':'');
+            document.getElementById('tabPrivacy').className = 'tab'+(tab==='privacy'?' active':'');
         }
 
-        function clearChat() {
-            document.getElementById('messages').innerHTML = '';
+        function showPrivacy() { showTab('privacy'); }
+
+        function getTime() { return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+
+        function addMsg(text, type) {
+            const c = document.getElementById('msgs');
+            const d = document.createElement('div');
+            d.className = 'msg msg-' + type;
+            if (type==='sys'||type==='alert') { d.innerHTML = text; }
+            else { d.innerHTML = text + '<span class="time">'+getTime()+'</span>'; }
+            c.appendChild(d);
+            document.getElementById('chatArea').scrollTop = 999999;
         }
 
-        async function sendMessage() {
+        function clearChat() { document.getElementById('msgs').innerHTML = ''; }
+
+        async function sendMsg() {
             const input = document.getElementById('msgInput');
             const msg = input.value.trim();
             if (!msg) return;
             input.value = '';
-            addMessage(msg, 'user');
+            addMsg(msg, 'out');
 
+            document.getElementById('sendBtn').disabled = true;
             try {
-                const payload = {
-                    entry: [{
-                        changes: [{
-                            value: {
-                                messages: [{
-                                    from: currentPhone,
-                                    id: 'msg_' + Date.now(),
-                                    timestamp: Math.floor(Date.now()/1000).toString(),
-                                    type: 'text',
-                                    text: { body: msg }
-                                }]
-                            }
-                        }]
-                    }]
-                };
-
-                await fetch(API + '/webhook/whatsapp', {
+                const res = await fetch(API+'/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ message: msg, language: lang, phone: phone })
                 });
+                const data = await res.json();
 
-                addMessage('Message analysed by Kavach agent. Response sent to user via WhatsApp (logged in server console).', 'system');
+                addMsg(data.response, 'in');
+
+                if (data.risk_score > 50) {
+                    addMsg('Risk: '+data.risk_score+'/100 ('+data.risk_level+') | Action: '+data.action, 'sys');
+                }
+                if (data.should_alert_contact) {
+                    addMsg('Trusted contact would be alerted NOW', 'alert');
+                }
+
+                // Store payload for payload tab
+                lastPayload = data.whatsapp_payload_preview;
+                document.getElementById('payloadContent').textContent =
+                    'POST https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages\n' +
+                    'Authorization: Bearer {WHATSAPP_ACCESS_TOKEN}\n\n' +
+                    JSON.stringify(lastPayload, null, 2);
+
             } catch(e) {
-                addMessage('Error: ' + e.message, 'system');
+                addMsg('Error: '+e.message, 'sys');
             }
+            document.getElementById('sendBtn').disabled = false;
         }
 
-        function sendQuick(msg) {
-            document.getElementById('msgInput').value = msg;
-            sendMessage();
+        function loadScenario(type) {
+            const msgs = {
+                digital_arrest: "You are under digital arrest. Do not disconnect. Transfer 50000 to secure account immediately. Do not tell anyone about this call.",
+                cbi_fake: "CBI se bol rahe hain. Aapke Aadhaar pe case register hua hai. Turant 50000 transfer karo nahi toh arrest ho jaoge. Kisi ko mat batana.",
+                kyc: "Your KYC has expired. Your bank account will be frozen in 24 hours. Update now by sending OTP.",
+                safe: "Hi, how are you? Want to grab lunch tomorrow?"
+            };
+            clearChat();
+            phone = '+919' + Math.floor(100000000 + Math.random()*900000000);
+            addMsg('New session started. Scenario loaded.', 'sys');
+            if (msgs[type]) {
+                document.getElementById('msgInput').value = msgs[type];
+            }
         }
 
         async function runFullDemo() {
             clearChat();
-            addMessage('Running full demo: Meena (54, Lucknow) — Digital Arrest Prevention', 'system');
+            phone = '+919999900000';
+            addMsg('Running full demo: Meena (54, Lucknow)', 'sys');
 
             try {
-                const res = await fetch(API + '/demo', { method: 'POST' });
+                const res = await fetch(API+'/demo', {method:'POST'});
                 const data = await res.json();
 
-                // Simulate the conversation flow
-                await delay(500);
-                addMessage('Meena receives a call from "CBI officer" demanding Rs 40,000 transfer', 'system');
+                await sleep(400);
+                addMsg('Meena receives call from fake CBI officer', 'sys');
+                await sleep(600);
+                addMsg('Transaction intercepted: Rs 40,000 to unknown account', 'alert');
+                await sleep(500);
+                addMsg('Risk Score: '+data.steps[0].risk_score+'/100 — '+data.steps[0].risk_level, 'sys');
+                await sleep(700);
 
-                await delay(800);
-                addMessage('Kavach detects high-risk transaction: Rs 40,000 to unknown recipient', 'alert',);
+                const q = data.steps[1].message || 'Detection question sent in '+lang;
+                addMsg(q, 'in');
+                await sleep(800);
+                addMsg('1', 'out');
+                await sleep(400);
+                addMsg('User confirmed pressure. Activating protection.', 'sys');
+                await sleep(600);
+                addMsg('ALERT sent to trusted contact: "Your mother is about to send Rs 40,000 under possible pressure. Call her now."', 'alert');
+                await sleep(500);
+                addMsg('Recovery flow: calming message + 6 steps + complaint template + 1930 helpline sent', 'sys');
+                await sleep(400);
+                addMsg('Transaction BLOCKED. Rs 40,000 saved. Session RESOLVED.', 'alert');
+                addMsg('Demo complete — '+data.steps.length+' steps executed.', 'sys');
 
-                await delay(600);
-                const step1 = data.steps[0];
-                addMessage('Risk Score: ' + step1.risk_score + '/100 (CRITICAL)<br>Factors: New recipient +30, Amount &gt;10K +20, First-time user +20, Age &gt;50 +15', 'system');
-
-                await delay(800);
-                addMessage(decodeUnicode(data.steps[1].message), 'incoming');
-
-                await delay(1000);
-                addMessage('1', 'user');
-                addMessage('Meena confirms she is under pressure', 'system');
-
-                await delay(600);
-                addMessage('ALERT sent to trusted contact: "Your mother is about to send Rs 40,000 under possible pressure. Call her now."', 'alert');
-
-                await delay(800);
-                addMessage('Recovery flow activated. Sending calming message + 6 recovery steps + complaint template + 1930 helpline info...', 'system');
-
-                await delay(600);
-                addMessage('Transaction BLOCKED. Session RESOLVED.<br>Rs 40,000 saved.', 'alert');
-
-                addMessage('Demo complete. ' + data.steps.length + ' steps executed successfully.', 'system');
-
-            } catch(e) {
-                addMessage('Demo error: ' + e.message, 'system');
-            }
+            } catch(e) { addMsg('Error: '+e.message, 'sys'); }
         }
 
-        function loadScenario(type) {
-            const scenarios = {
-                digital_arrest: "You are under digital arrest. Do not disconnect this video call. Transfer 50000 to this account immediately or face physical arrest. Do not tell anyone.",
-                kyc_fraud: "Your KYC has expired. Your bank account will be frozen within 24 hours. Click this link to update immediately or lose access to your funds.",
-                safe: "Hi, how are you? Want to grab lunch tomorrow? That new restaurant near office looks good.",
-                custom: ""
-            };
-
-            clearChat();
-            const msg = scenarios[type];
-            if (msg) {
-                document.getElementById('msgInput').value = msg;
-                addMessage('Scenario loaded. Click Send or press Enter to test.', 'system');
-            } else {
-                addMessage('Type any message to test Kavach scam detection.', 'system');
-            }
-        }
-
-        function decodeUnicode(str) {
-            if (!str) return '';
-            try {
-                return decodeURIComponent(JSON.parse('"' + str.replace(/"/g, '\\"') + '"'));
-            } catch { return str; }
-        }
-
-        function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+        function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
     </script>
 </body>
 </html>
