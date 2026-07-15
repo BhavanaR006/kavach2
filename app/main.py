@@ -7,11 +7,13 @@ Routes: WhatsApp webhook, transaction initiation, demo endpoint, health check.
 
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, Request, Query, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -85,6 +87,17 @@ async def log_requests(request: Request, call_next):
         f"[{response.status_code}] ({duration:.3f}s)"
     )
     return response
+
+
+# --- UI (Root) ---
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_ui():
+    """Serve the demo UI at root."""
+    static_path = Path(__file__).parent.parent / "static" / "index.html"
+    if static_path.exists():
+        return HTMLResponse(content=static_path.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Kavach 2.0 API</h1><p>Visit /health or /demo</p>")
 
 
 # --- Health Check ---

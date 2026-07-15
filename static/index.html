@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavach 2.0 — Fraud Shield Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .header {
+            background: #1e293b;
+            padding: 20px 30px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 { font-size: 24px; color: #fff; }
+        .header h1 span { color: #facc15; }
+        .header .status { color: #22c55e; font-size: 14px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #334155;
+        }
+        .card h2 { color: #facc15; font-size: 18px; margin-bottom: 16px; }
+        .card p { color: #94a3b8; font-size: 14px; margin-bottom: 12px; }
+        .btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #2563eb; }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-green { background: #16a34a; }
+        .btn-green:hover { background: #15803d; }
+        .chat-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            height: 350px;
+            overflow-y: auto;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .msg {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .msg-user {
+            background: #1d4ed8;
+            margin-left: auto;
+            text-align: right;
+        }
+        .msg-agent {
+            background: #334155;
+        }
+        .msg-system {
+            background: #7c2d12;
+            font-size: 12px;
+            text-align: center;
+            max-width: 100%;
+        }
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .input-row input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .input-row input:focus { outline: none; border-color: #3b82f6; }
+        .input-row button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .result-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            color: #a5f3fc;
+        }
+        .risk-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .risk-LOW { background: #166534; color: #86efac; }
+        .risk-MEDIUM { background: #854d0e; color: #fde047; }
+        .risk-HIGH { background: #9a3412; color: #fdba74; }
+        .risk-CRITICAL { background: #7f1d1d; color: #fca5a5; }
+        .steps { list-style: none; padding: 0; }
+        .steps li {
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .steps li:last-child { border-bottom: none; }
+        .step-num {
+            background: #3b82f6;
+            color: white;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .loading { opacity: 0.5; }
+        .tag { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Kavach <span>2.0</span></h1>
+        <div class="status" id="status">Checking...</div>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            <!-- Demo Card -->
+            <div class="card">
+                <h2>Full Demo — Meena's Story</h2>
+                <p>Simulates complete fraud prevention scenario: Meena (54, Lucknow) is pressured to transfer Rs 40,000 by a fake CBI officer. Kavach intercepts, detects coercion, alerts her son, and guides recovery.</p>
+                <button class="btn btn-green" onclick="runDemo()" id="demoBtn">Run Full Demo</button>
+                <div id="demoResult" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- Transaction Card -->
+            <div class="card">
+                <h2>Test Transaction Interception</h2>
+                <p>Simulate a UPI payment to see risk scoring in action.</p>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;color:#94a3b8;">Amount (Rs)</label>
+                    <input type="number" id="txnAmount" value="40000" style="width:100%;background:#0f172a;border:1px solid #475569;color:#e2e8f0;padding:10px;border-radius:6px;margin-top:4px;">
+                </div>
+                <button class="btn" onclick="testTransaction()">Intercept Transaction</button>
+                <div id="txnResult" class="result-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Chat Simulation -->
+        <div class="card">
+            <h2>WhatsApp Chat Simulation</h2>
+            <p>Type a message as if you received it from a scammer. Kavach will analyse it for fraud signals.</p>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="input-row">
+                <input type="text" id="chatInput" placeholder="Type a message (try: 'CBI se bol rahe hain, turant paisa transfer karo')" onkeypress="if(event.key==='Enter')sendChat()">
+                <button onclick="sendChat()">Send</button>
+            </div>
+            <p class="tag">Try: "Your Aadhaar is linked to money laundering. Transfer 50000 now or face arrest." or "Hello, how are you?"</p>
+        </div>
+
+        <!-- Demo Steps -->
+        <div class="card" id="stepsCard" style="display:none;">
+            <h2>Demo Flow Steps</h2>
+            <ul class="steps" id="stepsList"></ul>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+
+        // Health check on load
+        async function checkHealth() {
+            try {
+                const res = await fetch(API + '/health');
+                const data = await res.json();
+                document.getElementById('status').textContent = 'Live — ' + data.status;
+                document.getElementById('status').style.color = '#22c55e';
+            } catch(e) {
+                document.getElementById('status').textContent = 'Offline';
+                document.getElementById('status').style.color = '#ef4444';
+            }
+        }
+        checkHealth();
+
+        // Run demo
+        async function runDemo() {
+            const btn = document.getElementById('demoBtn');
+            const result = document.getElementById('demoResult');
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            result.style.display = 'block';
+            result.textContent = 'Executing full demo scenario...\n';
+
+            try {
+                const res = await fetch(API + '/demo', { method: 'POST' });
+                const data = await res.json();
+                result.textContent = JSON.stringify(data, null, 2);
+
+                // Show steps
+                const stepsCard = document.getElementById('stepsCard');
+                const stepsList = document.getElementById('stepsList');
+                stepsCard.style.display = 'block';
+                stepsList.innerHTML = '';
+                data.steps.forEach(step => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="step-num">${step.step}</span>
+                        <span>${step.action}${step.risk_level ? ' <span class="risk-badge risk-'+step.risk_level+'">'+step.risk_level+'</span>' : ''}${step.amount ? ' — '+step.amount : ''}${step.messages_sent ? ' ('+step.messages_sent+' messages)' : ''}</span>`;
+                    stepsList.appendChild(li);
+                });
+            } catch(e) {
+                result.textContent = 'Error: ' + e.message;
+            }
+            btn.disabled = false;
+            btn.textContent = 'Run Full Demo';
+        }
+
+        // Test transaction
+        async function testTransaction() {
+            const amount = document.getElementById('txnAmount').value;
+            const result = document.getElementById('txnResult');
+            result.style.display = 'block';
+            result.textContent = 'Intercepting transaction...\n';
+
+            try {
+                const res = await fetch(API + '/api/transaction/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_phone: '+919876543210',
+                        recipient_phone: '+917777777777',
+                        amount: parseFloat(amount)
+                    })
+                });
+                const data = await res.json();
+                result.innerHTML = `<strong>Status:</strong> ${data.status}\n<strong>Risk Score:</strong> ${data.risk_score}/100\n<strong>Risk Level:</strong> <span class="risk-badge risk-${data.risk_level}">${data.risk_level}</span>\n<strong>Action:</strong> ${data.action}\n<strong>Message Sent:</strong> ${data.message_sent}`;
+            } catch(e) {
+                result.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        // Chat simulation
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const chatBox = document.getElementById('chatBox');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            // Add user message
+            chatBox.innerHTML += `<div class="msg msg-user">${msg}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Send to webhook
+            try {
+                const phone = '91' + (9000000000 + Math.floor(Math.random()*999999));
+                const payload = {
+                    entry: [{
+                        changes: [{
+                            value: {
+                                messages: [{
+                                    from: phone.toString(),
+                                    id: 'msg_' + Date.now(),
+                                    timestamp: Math.floor(Date.now()/1000).toString(),
+                                    type: 'text',
+                                    text: { body: msg }
+                                }]
+                            }
+                        }]
+                    }]
+                };
+
+                const res = await fetch(API + '/webhook/whatsapp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Also do a direct detection call for visual feedback
+                const txnRes = await fetch(API + '/api/transaction/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_phone: '+' + phone,
+                        recipient_phone: '+917777777777',
+                        amount: 25000
+                    })
+                });
+                const txnData = await txnRes.json();
+
+                // Show agent response
+                chatBox.innerHTML += `<div class="msg msg-system">Kavach Analysis: Risk ${txnData.risk_score}/100 — <span class="risk-badge risk-${txnData.risk_level}">${txnData.risk_level}</span></div>`;
+                chatBox.innerHTML += `<div class="msg msg-agent">${txnData.message_sent || 'Message processed. Check server logs for full response.'}</div>`;
+            } catch(e) {
+                chatBox.innerHTML += `<div class="msg msg-system">Error: ${e.message}</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
