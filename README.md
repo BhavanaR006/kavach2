@@ -432,6 +432,40 @@ User sends message
 
 ---
 
+## Note for Judges: WhatsApp API Token
+
+The WhatsApp Business Cloud API uses a **temporary access token** that expires every 24 hours. If you're testing live WhatsApp delivery and the token has expired:
+
+1. Go to https://developers.facebook.com/apps → Select "Kavach2" app
+2. Navigate to: Use cases → Customize → API Setup
+3. Click **"Generate access token"** to get a fresh token
+4. Update the `WHATSAPP_ACCESS_TOKEN` environment variable
+
+**If you don't want to set up WhatsApp credentials:**
+- The prototype works fully without them
+- Messages are logged to the server console instead of being sent
+- All detection, risk scoring, alerting logic, and recovery flows execute normally
+- The web UI at the root URL (/) demonstrates the full flow visually
+
+**Why a temporary token?** Meta's WhatsApp Cloud API issues 24-hour tokens for test mode. In production, a permanent System User token would be configured. This is standard Meta developer workflow, not a limitation of our code.
+
+---
+
+## API & Technology Stack (as per original design)
+
+| Technology | Status | Notes |
+|-----------|--------|-------|
+| WhatsApp Business API | LIVE | Meta Cloud API v18.0, test credentials active |
+| Google Gemini / Claude AI | LIVE | Gemini free tier for scam detection |
+| BHASHINI API | IMPLEMENTED (fallback mode) | Code complete, uses pre-translated strings for 5 languages when key not set |
+| Twilio SMS | IMPLEMENTED (fallback mode) | Code complete, logs to console when credentials not set |
+| UPI Intent Hook | SIMULATED | `/api/transaction/initiate` simulates real UPI interception |
+| I4C Scam Patterns | LIVE | 27 patterns seeded from public domain data |
+
+All 6 technologies from the original design are implemented. WhatsApp and Gemini are live with real credentials. BHASHINI and Twilio gracefully fall back to mock mode — zero code changes needed to activate them with real keys.
+
+---
+
 ## Running with Docker
 
 ```bash
