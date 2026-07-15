@@ -53,6 +53,9 @@ class WhatsAppClient:
         """
         Send a text message via WhatsApp.
 
+        Tries free-form text first. If user hasn't messaged within 24h,
+        falls back to hello_world template (which can be sent anytime).
+
         Args:
             to: Recipient phone number in E.164 format.
             message: Text message content.
@@ -65,6 +68,8 @@ class WhatsAppClient:
             return True
 
         url = f"{BASE_URL}/{self.phone_number_id}/messages"
+
+        # Try free-form text first
         payload = {
             "messaging_product": "whatsapp",
             "to": to.lstrip("+"),
@@ -82,13 +87,59 @@ class WhatsAppClient:
                 return True
 
         except httpx.HTTPStatusError as e:
+            error_code = e.response.status_code
+            # If 400/403 — likely no 24h window, try template
+            if error_code in (400, 403):
+                logger.warning(
+                    f"Free-text failed ({error_code}), trying template message"
+                )
+                return await self._send_as_template(to, message)
             logger.error(
-                f"WhatsApp API error ({e.response.status_code}): "
-                f"{e.response.text}"
+                f"WhatsApp API error ({error_code}): {e.response.text}"
             )
             return False
         except httpx.RequestError as e:
             logger.error(f"WhatsApp request failed: {e}")
+            return False
+
+    async def _send_as_template(self, to: str, message: str) -> bool:
+        """
+        Send message using hello_world template as fallback.
+
+        This works even without a 24-hour conversation window.
+        After template delivery, user can reply and open free-text window.
+
+        Args:
+            to: Recipient phone number.
+            message: Original message (logged for reference).
+
+        Returns:
+            True if template was sent successfully.
+        """
+        url = f"{BASE_URL}/{self.phone_number_id}/messages"
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to.lstrip("+"),
+            "type": "template",
+            "template": {
+                "name": "hello_world",
+                "language": {"code": "en_US"},
+            },
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    url, json=payload, headers=self.headers
+                )
+                response.raise_for_status()
+                logger.info(
+                    f"WhatsApp template sent to {to} "
+                    f"(original message logged: {message[:50]}...)"
+                )
+                return True
+        except (httpx.HTTPStatusError, httpx.RequestError) as e:
+            logger.error(f"WhatsApp template also failed: {e}")
             return False
 
     async def send_template_message(
