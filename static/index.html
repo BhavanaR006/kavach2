@@ -3,90 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavach 2.0 — Demo</title>
+    <title>Kavach 2.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-
-        .nav { background: #1e293b; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; }
+        .nav { background: #1e293b; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; }
         .nav-left { display: flex; align-items: center; gap: 10px; }
-        .nav-logo { width: 32px; height: 32px; background: #25d366; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: white; }
-        .nav h1 { font-size: 16px; font-weight: 700; color: white; }
+        .nav-logo { width: 34px; height: 34px; background: #25d366; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: white; }
+        .nav h1 { font-size: 17px; font-weight: 700; color: white; }
+        .nav-badge { font-size: 10px; background: #22c55e; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
         .nav-right { display: flex; gap: 8px; }
-        .nav-link { color: #94a3b8; text-decoration: none; font-size: 11px; padding: 5px 10px; border: 1px solid #475569; border-radius: 4px; }
-        .nav-link:hover { color: white; border-color: #94a3b8; }
+        .nav-link { color: #94a3b8; text-decoration: none; font-size: 11px; padding: 5px 10px; border: 1px solid #475569; border-radius: 4px; transition: all 0.2s; }
+        .nav-link:hover { color: white; border-color: white; }
 
-        .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        .hero { text-align: center; margin-bottom: 40px; }
+        .hero h2 { font-size: 28px; font-weight: 800; color: white; margin-bottom: 8px; }
+        .hero p { color: #94a3b8; font-size: 15px; max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
-        /* Step indicator */
-        .steps-bar { display: flex; gap: 4px; margin-bottom: 24px; }
-        .step-dot { flex: 1; height: 4px; border-radius: 2px; background: #334155; transition: background 0.3s; }
-        .step-dot.active { background: #25d366; }
-        .step-dot.done { background: #16a34a; }
+        .flow-section { margin-bottom: 40px; }
+        .flow-title { font-size: 14px; font-weight: 700; color: #facc15; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
 
-        /* Language selector */
-        .lang-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .lang-row label { font-size: 13px; color: #94a3b8; }
-        .lang-select { background: #1e293b; border: 1px solid #475569; color: white; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+        .flow-steps { display: flex; flex-direction: column; gap: 12px; }
+        .flow-step { background: #1e293b; border-radius: 10px; padding: 16px 20px; border: 1px solid #334155; display: flex; gap: 14px; align-items: flex-start; }
+        .step-num { background: #25d366; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        .step-content h3 { font-size: 14px; font-weight: 600; color: white; margin-bottom: 4px; }
+        .step-content p { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+        .step-tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 6px; font-weight: 600; }
+        .tag-whatsapp { background: #064e3b; color: #6ee7b7; }
+        .tag-ai { background: #312e81; color: #a5b4fc; }
+        .tag-auto { background: #78350f; color: #fde68a; }
 
-        /* Screens */
-        .screen { display: none; }
-        .screen.active { display: block; }
+        .demo-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; margin-top: 30px; text-align: center; }
+        .demo-card h3 { color: white; margin-bottom: 8px; }
+        .demo-card p { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+        .demo-btn { background: #25d366; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+        .demo-btn:hover { background: #1ea952; }
+        .demo-btn:disabled { background: #475569; cursor: not-allowed; }
+        .demo-result { margin-top: 16px; text-align: left; background: #0f172a; border-radius: 8px; padding: 14px; font-size: 12px; color: #a5f3fc; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; display: none; }
 
-        /* Payment screen */
-        .payment-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; max-width: 400px; margin: 0 auto; }
-        .payment-card h2 { font-size: 15px; color: #94a3b8; margin-bottom: 16px; text-align: center; }
-        .payment-amount { font-size: 36px; font-weight: 800; color: white; text-align: center; margin: 16px 0; }
-        .payment-amount span { font-size: 20px; color: #94a3b8; }
-        .payment-detail { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155; font-size: 13px; }
-        .payment-detail .label { color: #94a3b8; }
-        .payment-detail .value { color: #e2e8f0; font-weight: 500; }
-        .pay-btn { width: 100%; margin-top: 20px; padding: 14px; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .pay-btn:hover { background: #4f46e5; }
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+        .tech-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
+        .tech-item .status { font-size: 18px; margin-bottom: 4px; }
+        .tech-item h4 { font-size: 12px; color: white; margin-bottom: 2px; }
+        .tech-item p { font-size: 11px; color: #64748b; }
 
-        /* WhatsApp message screen */
-        .wa-screen { max-width: 420px; margin: 0 auto; }
-        .wa-header { background: #075e54; padding: 12px 16px; border-radius: 12px 12px 0 0; display: flex; align-items: center; gap: 10px; }
-        .wa-avatar { width: 36px; height: 36px; background: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px; }
-        .wa-name { color: white; font-size: 14px; font-weight: 600; }
-        .wa-sub { color: rgba(255,255,255,0.7); font-size: 11px; }
-        .wa-body { background: #efeae2; padding: 16px; min-height: 250px; display: flex; flex-direction: column; gap: 8px; }
-        .wa-msg { background: white; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.6; color: #111; max-width: 90%; box-shadow: 0 1px 1px rgba(0,0,0,0.1); border-top-left-radius: 0; }
-        .wa-msg .time { font-size: 10px; color: #667781; float: right; margin-left: 8px; margin-top: 4px; }
-        .wa-msg-out { background: #d9fdd3; align-self: flex-end; border-top-left-radius: 8px; border-top-right-radius: 0; }
-        .wa-reply-btns { display: flex; gap: 10px; margin-top: 12px; }
-        .wa-reply-btn { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #25d366; background: transparent; color: #111; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-        .wa-reply-btn:hover { background: #25d366; color: white; }
-        .wa-reply-btn.danger { border-color: #dc2626; }
-        .wa-reply-btn.danger:hover { background: #dc2626; color: white; }
-        .wa-footer { background: #f0f2f5; padding: 10px 16px; border-radius: 0 0 12px 12px; text-align: center; font-size: 11px; color: #667781; }
-
-        /* Outcome screen */
-        .outcome { max-width: 500px; margin: 0 auto; text-align: center; }
-        .outcome-icon { font-size: 48px; margin-bottom: 12px; }
-        .outcome h2 { font-size: 22px; margin-bottom: 8px; }
-        .outcome p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
-        .outcome-card { background: #1e293b; border-radius: 10px; padding: 16px; text-align: left; margin: 16px 0; border: 1px solid #334155; }
-        .outcome-card h3 { font-size: 13px; color: #facc15; margin-bottom: 8px; }
-        .outcome-card ul { list-style: none; padding: 0; }
-        .outcome-card li { padding: 6px 0; font-size: 13px; color: #cbd5e1; border-bottom: 1px solid #334155; }
-        .outcome-card li:last-child { border: none; }
-        .reset-btn { margin-top: 20px; padding: 12px 24px; background: #334155; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
-        .reset-btn:hover { background: #475569; }
-
-        /* Alert card */
-        .alert-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 16px; margin: 16px 0; text-align: left; }
-        .alert-card h3 { color: #991b1b; font-size: 14px; margin-bottom: 6px; }
-        .alert-card p { color: #7f1d1d; font-size: 13px; line-height: 1.5; }
-
-        .safe-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin: 16px 0; text-align: left; }
-        .safe-card h3 { color: #166534; font-size: 14px; margin-bottom: 6px; }
-        .safe-card p { color: #15803d; font-size: 13px; line-height: 1.5; }
-
-        /* Info banner */
-        .info-banner { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #94a3b8; line-height: 1.5; }
-        .info-banner strong { color: #e2e8f0; }
+        @media (max-width: 600px) { .container { padding: 16px; } .hero h2 { font-size: 22px; } }
     </style>
 </head>
 <body>
@@ -94,273 +57,115 @@
         <div class="nav-left">
             <div class="nav-logo">K</div>
             <h1>Kavach 2.0</h1>
+            <span class="nav-badge">LIVE</span>
         </div>
         <div class="nav-right">
-            <a href="/health" class="nav-link" target="_blank">API</a>
-            <a href="/api/privacy" class="nav-link" target="_blank">Privacy</a>
-            <a href="https://github.com/BhavanaR006/kavach2" class="nav-link" target="_blank">GitHub</a>
+            <a href="/health" class="nav-link">Health</a>
+            <a href="/api/privacy" class="nav-link">Privacy</a>
+            <a href="https://github.com/BhavanaR006/kavach2" class="nav-link">GitHub</a>
         </div>
     </nav>
 
     <div class="container">
-        <div class="steps-bar">
-            <div class="step-dot active" id="dot1"></div>
-            <div class="step-dot" id="dot2"></div>
-            <div class="step-dot" id="dot3"></div>
-            <div class="step-dot" id="dot4"></div>
+        <div class="hero">
+            <h2>WhatsApp-Native Fraud Shield</h2>
+            <p>Kavach intercepts risky UPI transactions, asks the user if they're being pressured, and if yes — autonomously protects them through AI-personalized recovery. All via WhatsApp. Zero app downloads.</p>
         </div>
 
-        <div class="lang-row">
-            <label>User's language:</label>
-            <select class="lang-select" id="langSelect">
-                <option value="hi">Hindi</option>
-                <option value="en">English</option>
-                <option value="te">Telugu</option>
-                <option value="ta">Tamil</option>
-                <option value="bn">Bengali</option>
-            </select>
-        </div>
-
-        <div class="info-banner">
-            <strong>Real user flow:</strong> A scammer calls the user and pressures them to transfer money via UPI. When the user opens their UPI app to pay, Kavach intercepts the transaction and starts the protection flow below.
-        </div>
-
-        <!-- Screen 1: Payment initiation -->
-        <div class="screen active" id="screen1">
-            <div class="payment-card">
-                <h2>UPI Payment</h2>
-                <div class="payment-amount"><span>₹</span>40,000</div>
-                <div class="payment-detail"><span class="label">To</span><span class="value">Unknown Account</span></div>
-                <div class="payment-detail"><span class="label">UPI ID</span><span class="value">xxxx@oksbi</span></div>
-                <div class="payment-detail"><span class="label">From</span><span class="value" id="userName">Meena (54, Lucknow)</span></div>
-                <div class="payment-detail"><span class="label">Status</span><span class="value" style="color:#facc15;">New recipient</span></div>
-                <button class="pay-btn" onclick="initiatePayment()">Pay ₹40,000</button>
-            </div>
-            <p style="text-align:center; margin-top:12px; font-size:12px; color:#64748b;">Simulates: User under pressure opens UPI app to transfer money</p>
-        </div>
-
-        <!-- Screen 2: Kavach intercepts, sends WhatsApp -->
-        <div class="screen" id="screen2">
-            <div class="wa-screen">
-                <div class="wa-header">
-                    <div class="wa-avatar">K</div>
-                    <div>
-                        <div class="wa-name">Kavach 2.0</div>
-                        <div class="wa-sub">Online</div>
+        <div class="flow-section">
+            <div class="flow-title">How It Works — Real WhatsApp Flow</div>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h3>Transaction Intercepted</h3>
+                        <p>User opens UPI app to transfer money to unknown account. Kavach's risk scorer flags it (6 factors: amount, recipient, timing, age, history).</p>
+                        <span class="step-tag tag-auto">AUTOMATIC</span>
                     </div>
                 </div>
-                <div class="wa-body" id="waBody">
-                    <!-- Messages inserted here -->
+                <div class="flow-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h3>Language Selection</h3>
+                        <p>Kavach sends WhatsApp buttons: Hindi / English / Telugu. User taps their language. All further communication is in that language.</p>
+                        <span class="step-tag tag-whatsapp">WHATSAPP BUTTONS</span>
+                    </div>
                 </div>
-                <div class="wa-footer">End-to-end encrypted</div>
+                <div class="flow-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h3>"Are you being forced?"</h3>
+                        <p>Kavach asks in their language with Yes/No buttons. If No → transaction allowed, no alert. If Yes → protection activates.</p>
+                        <span class="step-tag tag-whatsapp">WHATSAPP BUTTONS</span>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h3>Scam Type Selection</h3>
+                        <p>Scrollable list of 10 common scam types in user's native script. User taps one. "Other" option lets them type.</p>
+                        <span class="step-tag tag-whatsapp">WHATSAPP LIST</span>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h3>Agentic AI Recovery (Autonomous)</h3>
+                        <p>From a single tap, the AI agent executes 5 actions autonomously:<br>
+                        • AI-personalized calming message specific to the scam type<br>
+                        • 6-step recovery guide in user's language<br>
+                        • 1930 helpline instructions<br>
+                        • Transaction blocked<br>
+                        • Trusted contact alerted</p>
+                        <span class="step-tag tag-ai">GEMINI AI</span>
+                        <span class="step-tag tag-auto">AUTONOMOUS</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Screen 3: Outcome - Fraud detected -->
-        <div class="screen" id="screen3">
-            <div class="outcome" id="outcomeContent">
-                <!-- Filled by JS -->
+        <div class="flow-section">
+            <div class="flow-title">Technology Status</div>
+            <div class="tech-grid">
+                <div class="tech-item"><div class="status">✅</div><h4>WhatsApp Business API</h4><p>Live — sends real messages</p></div>
+                <div class="tech-item"><div class="status">✅</div><h4>Google Gemini AI</h4><p>Live — personalized responses</p></div>
+                <div class="tech-item"><div class="status">✅</div><h4>Risk Scoring</h4><p>6-factor scoring engine</p></div>
+                <div class="tech-item"><div class="status">✅</div><h4>Multilingual</h4><p>Hindi, English, Telugu</p></div>
+                <div class="tech-item"><div class="status">✅</div><h4>Interactive Messages</h4><p>Buttons + List (zero typing)</p></div>
+                <div class="tech-item"><div class="status">✅</div><h4>27 Scam Patterns</h4><p>Seeded from I4C data</p></div>
             </div>
+        </div>
+
+        <div class="demo-card">
+            <h3>Trigger Demo</h3>
+            <p>This sends a real WhatsApp message to the test number. The full interactive flow begins on WhatsApp.</p>
+            <button class="demo-btn" id="demoBtn" onclick="triggerDemo()">Initiate Transaction → Start Flow</button>
+            <div class="demo-result" id="demoResult"></div>
         </div>
     </div>
 
     <script>
-        const API = window.location.origin;
-        let currentStep = 1;
-        let lang = 'hi';
+        async function triggerDemo() {
+            const btn = document.getElementById('demoBtn');
+            const result = document.getElementById('demoResult');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            result.style.display = 'block';
+            result.textContent = 'Initiating transaction interception...\n';
 
-        document.getElementById('langSelect').addEventListener('change', e => { lang = e.target.value; });
-
-        function setStep(n) {
-            currentStep = n;
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById('dot' + i);
-                dot.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+            try {
+                const res = await fetch('/api/transaction/initiate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_phone: '+918977533468', recipient_phone: '+917777777777', amount: 40000})
+                });
+                const data = await res.json();
+                result.textContent = JSON.stringify(data, null, 2) + '\n\n→ Check WhatsApp for language selection buttons.\n→ Tap a language → Tap Yes → Select scam type → Watch AI recovery arrive.';
+            } catch(e) {
+                result.textContent = 'Error: ' + e.message;
             }
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen' + Math.min(n, 3)).classList.add('active');
-        }
-
-        async function initiatePayment() {
-            // Call the real API
-            const res = await fetch(API + '/api/transaction/initiate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    user_phone: '+919999999999',
-                    recipient_phone: '+917777777777',
-                    amount: 40000
-                })
-            });
-            const data = await res.json();
-
-            setStep(2);
-
-            // Show Kavach's WhatsApp message
-            const waBody = document.getElementById('waBody');
-            waBody.innerHTML = '';
-
-            const sysMsg = document.createElement('div');
-            sysMsg.style.cssText = 'text-align:center; font-size:11px; color:#667781; margin:8px 0; background:#e2f0fe; padding:4px 10px; border-radius:12px; display:inline-block; align-self:center;';
-            sysMsg.textContent = 'Kavach detected risky transaction (Risk: ' + data.risk_score + '/100)';
-            waBody.appendChild(sysMsg);
-
-            setTimeout(() => {
-                const msg = document.createElement('div');
-                msg.className = 'wa-msg';
-                msg.innerHTML = getKavachQuestion() + '<span class="time">now</span>';
-                waBody.appendChild(msg);
-
-                // Add reply buttons
-                const btns = document.createElement('div');
-                btns.className = 'wa-reply-btns';
-                btns.innerHTML = `
-                    <button class="wa-reply-btn danger" onclick="userReplies('1')">1 — ${getYesText()}</button>
-                    <button class="wa-reply-btn" onclick="userReplies('2')">2 — ${getNoText()}</button>
-                `;
-                waBody.appendChild(btns);
-            }, 800);
-        }
-
-        async function userReplies(choice) {
-            const waBody = document.getElementById('waBody');
-
-            // Remove buttons
-            const btns = waBody.querySelector('.wa-reply-btns');
-            if (btns) btns.remove();
-
-            // Show user reply
-            const reply = document.createElement('div');
-            reply.className = 'wa-msg wa-msg-out';
-            reply.innerHTML = choice + '<span class="time">now</span>';
-            waBody.appendChild(reply);
-
-            // Call chat API
-            const res = await fetch(API + '/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: choice, language: lang, phone: '+919999999999' })
-            });
-            const data = await res.json();
-
-            setTimeout(() => {
-                if (choice === '1') {
-                    // Show agent response
-                    const agentMsg = document.createElement('div');
-                    agentMsg.className = 'wa-msg';
-                    agentMsg.innerHTML = data.response.substring(0, 200) + '...<span class="time">now</span>';
-                    waBody.appendChild(agentMsg);
-
-                    setTimeout(() => {
-                        setStep(3);
-                        showFraudOutcome(data);
-                    }, 1500);
-                } else {
-                    // Safe
-                    const agentMsg = document.createElement('div');
-                    agentMsg.className = 'wa-msg';
-                    agentMsg.innerHTML = data.response + '<span class="time">now</span>';
-                    waBody.appendChild(agentMsg);
-
-                    setTimeout(() => {
-                        setStep(3);
-                        showSafeOutcome();
-                    }, 1500);
-                }
-            }, 600);
-        }
-
-        function showFraudOutcome(data) {
-            setStep(4);
-            document.getElementById('outcomeContent').innerHTML = `
-                <div class="outcome-icon">🚨</div>
-                <h2 style="color:#fca5a5;">Fraud Prevented</h2>
-                <p>Kavach detected that the user was under pressure and activated the protection protocol.</p>
-
-                <div class="alert-card">
-                    <h3>Alert Sent to Trusted Contact</h3>
-                    <p>"Your mother is about to send ₹40,000 under possible pressure from a scammer. Please call her immediately. — Kavach 2.0"</p>
-                </div>
-
-                <div class="outcome-card">
-                    <h3>Actions Taken Automatically</h3>
-                    <ul>
-                        <li>Transaction BLOCKED (₹40,000 saved)</li>
-                        <li>Trusted contact alerted via WhatsApp</li>
-                        <li>Recovery guide sent in ${getLangName()}</li>
-                        <li>Cybercrime complaint template generated</li>
-                        <li>1930 helpline instructions sent</li>
-                        <li>Incident logged for authorities</li>
-                    </ul>
-                </div>
-
-                <div class="outcome-card">
-                    <h3>WhatsApp API Payload (what was actually sent)</h3>
-                    <ul>
-                        <li style="font-family:monospace; font-size:11px;">POST graph.facebook.com/v18.0/{ID}/messages</li>
-                        <li style="font-family:monospace; font-size:11px;">to: "919999999999"</li>
-                        <li style="font-family:monospace; font-size:11px;">type: "text"</li>
-                        <li style="font-family:monospace; font-size:11px;">body: "${data.response.substring(0,60)}..."</li>
-                    </ul>
-                </div>
-
-                <button class="reset-btn" onclick="resetDemo()">Reset Demo</button>
-            `;
-        }
-
-        function showSafeOutcome() {
-            setStep(4);
-            document.getElementById('outcomeContent').innerHTML = `
-                <div class="outcome-icon">✅</div>
-                <h2 style="color:#86efac;">Transaction Allowed</h2>
-                <p>User confirmed they are NOT under pressure. Transaction proceeds normally.</p>
-
-                <div class="safe-card">
-                    <h3>No Alert Sent</h3>
-                    <p>Trusted contact was NOT notified. User's privacy maintained. Transaction allowed to complete.</p>
-                </div>
-
-                <div class="outcome-card">
-                    <h3>What Happened</h3>
-                    <ul>
-                        <li>Kavach asked a simple yes/no question</li>
-                        <li>User said "No" — not under pressure</li>
-                        <li>Transaction proceeds normally</li>
-                        <li>No data shared with anyone</li>
-                        <li>Session closed</li>
-                    </ul>
-                </div>
-
-                <button class="reset-btn" onclick="resetDemo()">Reset Demo</button>
-            `;
-        }
-
-        function resetDemo() {
-            setStep(1);
-        }
-
-        function getKavachQuestion() {
-            const questions = {
-                hi: '⚠️ Kavach ने देखा आप ₹40,000 transfer करने वाले हैं एक नये account में।\n\nक्या आपको किसी ने इस payment के लिए force किया है?\n\n1️⃣ हाँ (Yes)\n2️⃣ नहीं (No)',
-                en: '⚠️ Kavach noticed you are about to transfer ₹40,000 to a new account.\n\nHas someone pressured you into making this payment?\n\n1️⃣ Yes\n2️⃣ No',
-                te: '⚠️ Kavach గమనించింది: మీరు ₹40,000 కొత్త ఖాతాకు బదిలీ చేయబోతున్నారు.\n\nఈ చెల్లింపు కోసం ఎవరైనా మిమ్మల్ని బలవంతం చేశారా?\n\n1️⃣ అవును (Yes)\n2️⃣ కాదు (No)',
-                ta: '⚠️ Kavach கவனித்தது: நீங்கள் ₹40,000 புதிய கணக்கிற்கு மாற்ற உள்ளீர்கள்.\n\nஇந்த பணம் செலுத்த யாராவது உங்களை கட்டாயப்படுத்தினார்களா?\n\n1️⃣ ஆம் (Yes)\n2️⃣ இல்லை (No)',
-                bn: '⚠️ Kavach লক্ষ্য করেছে: আপনি ₹40,000 একটি নতুন অ্যাকাউন্টে ট্রান্সফার করতে যাচ্ছেন.\n\nএই পেমেন্টের জন্য কি কেউ আপনাকে জোর করেছে?\n\n1️⃣ হ্যাঁ (Yes)\n2️⃣ না (No)'
-            };
-            return (questions[lang] || questions.hi).replace(/\n/g, '<br>');
-        }
-
-        function getYesText() {
-            const t = { hi:'हाँ', en:'Yes', te:'అవును', ta:'ஆம்', bn:'হ্যাঁ' };
-            return t[lang] || t.hi;
-        }
-        function getNoText() {
-            const t = { hi:'नहीं', en:'No', te:'కాదు', ta:'இல்லை', bn:'না' };
-            return t[lang] || t.hi;
-        }
-        function getLangName() {
-            const t = { hi:'Hindi', en:'English', te:'Telugu', ta:'Tamil', bn:'Bengali' };
-            return t[lang] || 'Hindi';
+            btn.disabled = false;
+            btn.textContent = 'Initiate Transaction → Start Flow';
         }
     </script>
 </body>
