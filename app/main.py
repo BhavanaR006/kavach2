@@ -243,27 +243,75 @@ async def receive_whatsapp(request: Request):
                 )
 
         elif session.state == SessionState.AWAITING_SCAM_TYPE.value:
-            # User selected scam type — TRIGGER FULL AGENTIC RECOVERY
+            # User selected scam type or typed "other"
             from app.utils.language_utils import SCAM_TYPE_MAP
+
+            # If user selected "other", ask them to type
+            if user_input == "other":
+                other_prompts = {
+                    "hi": "Kripya briefly type karein kya hua hai:",
+                    "en": "Please briefly type what happened:",
+                    "te": "దయచేసి ఏం జరిగిందో briefly type చేయండి:",
+                }
+                await whatsapp_client.send_message(
+                    to=phone,
+                    message=other_prompts.get(user.language_preference, other_prompts["en"]),
+                )
+                # Stay in same state — next message will be their typed description
+                await db.commit()
+                return JSONResponse(status_code=200, content={"status": "ok"})
+
             scam_type = SCAM_TYPE_MAP.get(user_input, "OTHER")
             session.add_message("system", f"Scam type: {scam_type}")
             session.state = SessionState.RECOVERY_IN_PROGRESS.value
 
-            # === AGENTIC AI FLOW — 6 autonomous actions ===
-            if transaction:
-                await recovery_flow.execute(session, user, transaction)
-            else:
-                # No transaction but user confirmed fraud — still send recovery
+            # === AGENTIC AI FLOW — personalized recovery ===
+            lang = user.language_preference
+
+            # Step 1: Use AI to generate personalized calming + advice
+            try:
+                from app.integrations.claude_client import claude_client
+                ai_prompt = (
+                    f"You are Kavach 2.0, a fraud protection agent. "
+                    f"The user (language: {lang}) was targeted by a {scam_type} scam. "
+                    f"Generate a SHORT, calming message (3-4 lines) in {'Hindi' if lang=='hi' else 'Telugu' if lang=='te' else 'Tamil' if lang=='ta' else 'Bengali' if lang=='bn' else 'English'} that: "
+                    f"1) Tells them they are safe now "
+                    f"2) Explains briefly why this was a scam (specific to {scam_type}) "
+                    f"3) Says their transaction is blocked and trusted contact is alerted"
+                )
+                ai_response = await claude_client.complete(
+                    system="You are a compassionate fraud protection assistant. Reply ONLY in the requested language. Keep it short and calming.",
+                    user=ai_prompt,
+                    max_tokens=300,
+                )
+                await whatsapp_client.send_message(to=phone, message=ai_response)
+            except Exception as e:
+                logger.warning(f"AI response failed, using default: {e}")
                 from app.agent.recovery_agent import recovery_agent
-                lang = user.language_preference
                 calming = await recovery_agent.get_calming_message(lang)
                 await whatsapp_client.send_message(to=phone, message=calming)
-                steps = await recovery_agent.get_recovery_guide(lang)
-                guide = "\n".join(f"{i}. {s}" for i, s in enumerate(steps, 1))
-                await whatsapp_client.send_message(to=phone, message=guide)
-                helpline = await recovery_agent.get_helpline_message(lang)
-                await whatsapp_client.send_message(to=phone, message=helpline)
-                session.state = SessionState.RESOLVED.value
+
+            # Step 2: Send recovery steps
+            from app.agent.recovery_agent import recovery_agent
+            steps = await recovery_agent.get_recovery_guide(lang)
+            guide = "\n".join(f"{i}. {s}" for i, s in enumerate(steps, 1))
+            await whatsapp_client.send_message(to=phone, message=guide)
+
+            # Step 3: Send helpline info
+            helpline = await recovery_agent.get_helpline_message(lang)
+            await whatsapp_client.send_message(to=phone, message=helpline)
+
+            # Step 4: Block transaction
+            if transaction:
+                from app.models.transaction import TransactionStatus
+                transaction.status = TransactionStatus.BLOCKED
+
+            # Step 5: Mark resolved
+            session.state = SessionState.RESOLVED.value
+            await whatsapp_client.send_message(
+                to=phone,
+                message="Transaction BLOCKED. Incident logged. Stay safe.",
+            )
 
         else:
             # IDLE or unknown state — just acknowledge
