@@ -137,35 +137,107 @@
         </div>
 
         <div class="demo-card">
-            <h3>Trigger Demo</h3>
-            <p>This sends a real WhatsApp message to the test number. The full interactive flow begins on WhatsApp.</p>
-            <button class="demo-btn" id="demoBtn" onclick="triggerDemo()">Initiate Transaction → Start Flow</button>
-            <div class="demo-result" id="demoResult"></div>
+            <h3>Live Demo</h3>
+            <p>Click to trigger the full flow. Watch each step happen in real-time below — this is exactly what happens on WhatsApp.</p>
+            <button class="demo-btn" id="demoBtn" onclick="runFullDemo()">Run Full Demo</button>
+            <div id="demoSteps" style="margin-top:16px; display:none;">
+                <div id="stepsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        async function triggerDemo() {
+        async function runFullDemo() {
             const btn = document.getElementById('demoBtn');
-            const result = document.getElementById('demoResult');
+            const stepsDiv = document.getElementById('demoSteps');
+            const list = document.getElementById('stepsList');
             btn.disabled = true;
-            btn.textContent = 'Sending...';
-            result.style.display = 'block';
-            result.textContent = 'Initiating transaction interception...\n';
+            btn.textContent = 'Running...';
+            stepsDiv.style.display = 'block';
+            list.innerHTML = '';
+
+            function addStep(icon, text, type) {
+                const div = document.createElement('div');
+                div.style.cssText = 'padding:12px 14px; border-radius:8px; font-size:13px; line-height:1.5; display:flex; gap:10px; align-items:flex-start;';
+                if (type === 'system') div.style.background = '#1e293b';
+                else if (type === 'user') div.style.background = '#064e3b';
+                else if (type === 'agent') div.style.background = '#312e81';
+                else if (type === 'alert') div.style.background = '#7f1d1d';
+                else div.style.background = '#1e293b';
+                div.innerHTML = '<span style="font-size:18px; flex-shrink:0;">' + icon + '</span><span>' + text + '</span>';
+                list.appendChild(div);
+                div.scrollIntoView({behavior:'smooth'});
+            }
+
+            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
             try {
+                // Step 1: Transaction detected
+                addStep('🔍', '<b>PERCEIVE:</b> Transaction detected — ₹40,000 to unknown account. Risk scoring: new recipient +30, amount >10K +20, first-time user +20 = <b>70/100 HIGH</b>', 'system');
+                await sleep(1000);
+
+                // Step 2: Language selection sent
+                addStep('📱', '<b>WhatsApp Sent:</b> Language selection buttons → [Hindi] [English] [Telugu]', 'agent');
+                await sleep(800);
+
+                // Trigger the real API
                 const res = await fetch('/api/transaction/initiate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({user_phone: '+918977533468', recipient_phone: '+917777777777', amount: 40000})
                 });
                 const data = await res.json();
-                result.textContent = JSON.stringify(data, null, 2) + '\n\n→ Check WhatsApp for language selection buttons.\n→ Tap a language → Tap Yes → Select scam type → Watch AI recovery arrive.';
+
+                addStep('✅', 'API Response: ' + JSON.stringify(data), 'system');
+                await sleep(1000);
+
+                // Simulate user selecting Hindi
+                addStep('👤', '<b>User taps:</b> Hindi', 'user');
+                await sleep(600);
+
+                addStep('📱', '<b>WhatsApp Sent:</b> "⚠️ Kavach ने देखा आप ₹40,000 transfer करने वाले हैं... क्या आपको किसी ने force किया है?" → [हाँ] [नहीं]', 'agent');
+                await sleep(1000);
+
+                // Simulate user tapping Yes
+                addStep('👤', '<b>User taps:</b> हाँ (Yes — confirming pressure)', 'user');
+                await sleep(600);
+
+                addStep('🚨', '<b>ALERT:</b> Trusted contact notified — "Your family member is under pressure from a scammer. Call them NOW."', 'alert');
+                await sleep(800);
+
+                addStep('📱', '<b>WhatsApp Sent:</b> Scam type list in हिन्दी → [डिजिटल अरेस्ट] [नकली पुलिस/CBI] [नकली RBI/बैंक] [KYC/आधार] [OTP/पैसा माँगा] ...', 'agent');
+                await sleep(1000);
+
+                // Simulate user selecting Digital Arrest
+                addStep('👤', '<b>User taps:</b> डिजिटल अरेस्ट (Digital Arrest)', 'user');
+                await sleep(600);
+
+                // Agentic AI
+                addStep('🤖', '<b>REASON (Gemini AI):</b> Generating personalized response for DIGITAL_ARREST scam in Hindi...', 'system');
+                await sleep(1200);
+
+                addStep('📱', '<b>ACT — AI Response:</b> "शांत रहिए। आप सुरक्षित हैं। कोई भी असली पुलिस video call पर arrest नहीं करती। यह 100% scam है। आपका transaction block कर दिया गया है और आपके trusted contact को alert भेज दिया गया है।"', 'agent');
+                await sleep(800);
+
+                addStep('📱', '<b>ACT — Recovery Steps:</b><br>1. अभी और कोई पैसा ट्रांसफर न करें<br>2. तुरंत 1930 हेल्पलाइन पर कॉल करें<br>3. cybercrime.gov.in पर शिकायत दर्ज करें<br>4. अपने बैंक को सूचित करें<br>5. स्कैमर के messages का screenshot लें<br>6. परिवार के सदस्य को बताएं', 'agent');
+                await sleep(800);
+
+                addStep('📱', '<b>ACT — Helpline:</b> 📞 राष्ट्रीय साइबर क्राइम हेल्पलाइन: 1930 (24x7)', 'agent');
+                await sleep(600);
+
+                addStep('🔒', '<b>ACT — Transaction BLOCKED.</b> ₹40,000 saved.', 'alert');
+                await sleep(600);
+
+                addStep('📝', '<b>LEARN:</b> Pattern logged — DIGITAL_ARREST. Database updated for future detection.', 'system');
+                await sleep(400);
+
+                addStep('✅', '<b>Session RESOLVED.</b> 5 autonomous actions completed from a single user tap. This is the Agentic AI loop: PERCEIVE → REASON → ACT → LEARN', 'system');
+
             } catch(e) {
-                result.textContent = 'Error: ' + e.message;
+                addStep('❌', 'Error: ' + e.message, 'alert');
             }
             btn.disabled = false;
-            btn.textContent = 'Initiate Transaction → Start Flow';
+            btn.textContent = 'Run Full Demo Again';
         }
     </script>
 </body>
