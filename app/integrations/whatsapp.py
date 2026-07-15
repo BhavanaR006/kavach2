@@ -341,9 +341,14 @@ class WhatsAppClient:
             elif msg_type == "interactive":
                 interactive = msg.get("interactive", {})
                 if "button_reply" in interactive:
-                    text = interactive["button_reply"].get("title", "")
+                    # Use ID first (more reliable), fallback to title
+                    text = interactive["button_reply"].get("id", "")
+                    if not text:
+                        text = interactive["button_reply"].get("title", "")
                 elif "list_reply" in interactive:
-                    text = interactive["list_reply"].get("title", "")
+                    text = interactive["list_reply"].get("id", "")
+                    if not text:
+                        text = interactive["list_reply"].get("title", "")
 
             return WhatsAppMessage(
                 from_number=msg.get("from", ""),

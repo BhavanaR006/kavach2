@@ -211,9 +211,11 @@ def is_affirmative(text: str) -> bool:
         True if the response indicates 'yes'.
     """
     affirmative_words = {
-        "1", "yes", "haan", "ha", "haa", "ji", "yes",
+        "1", "yes", "haan", "ha", "haa", "ji",
         "avunu", "aam", "hyan", "হ্যাঁ", "हाँ", "हां",
         "అవును", "ஆம்",
+        # WhatsApp interactive button IDs and titles
+        "yes_forced", "haan / yes", "haan/ yes", "haan",
     }
     return text.strip().lower() in affirmative_words
 
@@ -232,6 +234,8 @@ def is_negative(text: str) -> bool:
         "2", "no", "nahi", "naa", "na",
         "ledu", "illa", "না", "नहीं",
         "లేదు", "இல்லை",
+        # WhatsApp interactive button IDs and titles
+        "no_safe", "nahi / no", "nahi/ no",
     }
     return text.strip().lower() in negative_words
 
