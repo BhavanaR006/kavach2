@@ -21,7 +21,7 @@ from sqlalchemy import select
 from app.config import settings
 from app.db.database import create_all_tables, get_db, async_session_factory
 from app.db.scam_patterns import seed_patterns
-from app.models.transaction import Transaction, TransactionCreate, TransactionStatus
+from app.models.transaction import Transaction, TransactionCreate, TransactionStatus, RiskLevel
 from app.models.user import User
 from app.models.session import ConversationSession, SessionState
 from app.integrations.whatsapp import whatsapp_client, WhatsAppMessage
@@ -142,8 +142,8 @@ async def receive_whatsapp(request: Request):
     """
     Receive incoming WhatsApp messages via Meta webhook.
 
-    Parses the payload, finds or creates a user session,
-    and routes through the Kavach agent.
+    Manages the full conversation flow as a state machine:
+    AWAITING_LANGUAGE → QUESTIONING → AWAITING_SCAM_TYPE → RECOVERY
     """
     try:
         payload = await request.json()
@@ -153,7 +153,6 @@ async def receive_whatsapp(request: Request):
     # Parse the webhook message
     message = whatsapp_client.parse_webhook(payload)
     if not message or not message.text:
-        # Status updates or non-text messages — acknowledge
         return JSONResponse(status_code=200, content={"status": "ok"})
 
     logger.info(f"WhatsApp message from {message.from_number}: {message.text[:50]}")
@@ -163,57 +162,112 @@ async def receive_whatsapp(request: Request):
     if not phone.startswith("+"):
         phone = "+" + phone
 
-    # Process in a database session
+    user_input = message.text.strip().lower()
+
     async with async_session_factory() as db:
-        # Find or create user
         user = await _get_or_create_user(db, phone)
-
-        # Find or create conversation session
         session = await _get_active_session(db, phone)
-
-        # Find associated transaction if any
         transaction = await _get_pending_transaction(db, phone)
 
-        # Process through agent
-        response = await kavach_agent.process_message(
-            phone=phone,
-            message=message.text,
-            session=session,
-            transaction=transaction,
-            user=user,
-        )
+        session.add_message("user", message.text)
 
-        # Handle actions
-        if response.should_alert_contact:
-            if transaction:
-                await alert_flow.send_trusted_alert(
-                    user=user,
-                    transaction=transaction,
-                    risk=type("Risk", (), {
-                        "risk_level": response.risk_level,
-                        "risk_score": response.risk_score,
-                    })(),
+        # --- STATE MACHINE ---
+
+        if session.state == SessionState.AWAITING_LANGUAGE.value:
+            # User selected language
+            lang_map = {"hindi": "hi", "english": "en", "telugu": "te",
+                        "tamil": "ta", "bengali": "bn",
+                        "lang_hi": "hi", "lang_en": "en", "lang_te": "te"}
+            selected_lang = lang_map.get(user_input, "hi")
+            user.language_preference = selected_lang
+            session.state = SessionState.QUESTIONING.value
+
+            # Send "Are you being forced?" with Yes/No buttons
+            from app.utils.language_utils import get_transaction_question
+            amount = transaction.amount if transaction else 0
+            question = get_transaction_question(selected_lang, amount)
+            await whatsapp_client.send_buttons(
+                to=phone,
+                body=question,
+                buttons=[
+                    {"id": "yes_forced", "title": "Haan / Yes"},
+                    {"id": "no_safe", "title": "Nahi / No"},
+                ],
+            )
+
+        elif session.state == SessionState.QUESTIONING.value:
+            # User replied Yes or No
+            from app.utils.language_utils import is_affirmative, is_negative, get_scam_type_question, get_scam_options_for_list
+            if is_affirmative(user_input):
+                session.state = SessionState.AWAITING_SCAM_TYPE.value
+                session.risk_score = 80
+                session.risk_level = "CRITICAL"
+
+                # Alert trusted contact NOW
+                if transaction and user.trusted_contact_phone:
+                    from app.agent.scam_detector import DetectionResult
+                    detection = DetectionResult(risk_score=80, risk_level=RiskLevel.CRITICAL)
+                    await alert_flow.send_trusted_alert(user=user, transaction=transaction, risk=detection)
+
+                # Send scam type list
+                await whatsapp_client.send_list(
+                    to=phone,
+                    body=get_scam_type_question(user.language_preference),
+                    button_text="Select",
+                    sections=get_scam_options_for_list(),
+                )
+            elif is_negative(user_input):
+                session.state = SessionState.CONFIRMED_SAFE.value
+                safe_messages = {
+                    "hi": "Theek hai! Aapki transaction safe hai. Agar future mein koi suspicious call/message aaye toh Kavach se baat karein.",
+                    "en": "All good! Your transaction is safe. If you receive any suspicious call/message in future, talk to Kavach.",
+                    "te": "Okay! Mee transaction safe ga undi. Future lo suspicious call/message vasthe Kavach tho matladandi.",
+                    "ta": "Okay! Ungal transaction safe. Future la suspicious call/message vandhaal Kavach kitta pesungal.",
+                    "bn": "Theek ache! Apnar transaction safe. Future e suspicious call/message ele Kavach er sathe kotha bolun.",
+                }
+                msg = safe_messages.get(user.language_preference, safe_messages["en"])
+                await whatsapp_client.send_message(to=phone, message=msg)
+            else:
+                # Didn't understand — resend buttons
+                await whatsapp_client.send_buttons(
+                    to=phone,
+                    body="Please tap one of the buttons below:",
+                    buttons=[
+                        {"id": "yes_forced", "title": "Haan / Yes"},
+                        {"id": "no_safe", "title": "Nahi / No"},
+                    ],
                 )
 
-        if response.should_start_recovery and transaction:
-            await recovery_flow.execute(session, user, transaction)
-        elif response.action == "ASK_SCAM_TYPE":
-            # Send interactive list for scam type selection
-            from app.utils.language_utils import get_scam_type_question, get_scam_options_for_list
-            await whatsapp_client.send_list(
-                to=phone,
-                body=get_scam_type_question(user.language_preference),
-                button_text="Select",
-                sections=get_scam_options_for_list(),
-            )
+        elif session.state == SessionState.AWAITING_SCAM_TYPE.value:
+            # User selected scam type — TRIGGER FULL AGENTIC RECOVERY
+            from app.utils.language_utils import SCAM_TYPE_MAP
+            scam_type = SCAM_TYPE_MAP.get(user_input, "OTHER")
+            session.add_message("system", f"Scam type: {scam_type}")
+            session.state = SessionState.RECOVERY_IN_PROGRESS.value
+
+            # === AGENTIC AI FLOW — 6 autonomous actions ===
+            if transaction:
+                await recovery_flow.execute(session, user, transaction)
+            else:
+                # No transaction but user confirmed fraud — still send recovery
+                from app.agent.recovery_agent import recovery_agent
+                lang = user.language_preference
+                calming = await recovery_agent.get_calming_message(lang)
+                await whatsapp_client.send_message(to=phone, message=calming)
+                steps = await recovery_agent.get_recovery_guide(lang)
+                guide = "\n".join(f"{i}. {s}" for i, s in enumerate(steps, 1))
+                await whatsapp_client.send_message(to=phone, message=guide)
+                helpline = await recovery_agent.get_helpline_message(lang)
+                await whatsapp_client.send_message(to=phone, message=helpline)
+                session.state = SessionState.RESOLVED.value
+
         else:
-            # Send the agent's response message
+            # IDLE or unknown state — just acknowledge
             await whatsapp_client.send_message(
                 to=phone,
-                message=response.message,
+                message="Kavach 2.0 is active. If you need help, a transaction interception will start the protection flow.",
             )
 
-        # Persist session changes
         await db.commit()
 
     return JSONResponse(status_code=200, content={"status": "ok"})
@@ -227,7 +281,7 @@ async def initiate_transaction(txn: TransactionCreate):
     Simulated UPI payment hook for demo purposes.
 
     When a transaction is initiated, Kavach intercepts it,
-    scores risk, and initiates the detection flow.
+    scores risk, and sends language selection to user.
     """
     async with async_session_factory() as db:
         # Find or create user
@@ -247,45 +301,40 @@ async def initiate_transaction(txn: TransactionCreate):
         session = await _get_active_session(db, txn.user_phone)
         session.transaction_id = transaction.id
 
-        # Initiate detection flow
-        response = await detect_flow.initiate(
-            transaction=transaction,
-            user=user,
-            session=session,
+        # Score the transaction
+        from app.agent.risk_scorer import risk_scorer
+        risk = risk_scorer.score_transaction(
+            transaction=transaction, user=user, is_new_recipient=True
         )
+        transaction.risk_score = risk.total_score
+        transaction.risk_level = risk.risk_level.value
+        transaction.status = TransactionStatus.FLAGGED
 
-        # Send the detection question to user via WhatsApp (with buttons)
+        # Set session to await language selection
+        session.state = SessionState.AWAITING_LANGUAGE.value
+        session.risk_score = risk.total_score
+        session.risk_level = risk.risk_level.value
+
+        # Send language selection buttons
         await whatsapp_client.send_buttons(
             to=txn.user_phone,
-            body=response.message,
+            body=f"Kavach detected a risky transaction (Rs {txn.amount:,.0f} to unknown account). Please select your language:",
             buttons=[
-                {"id": "yes_forced", "title": "Haan / Yes"},
-                {"id": "no_safe", "title": "Nahi / No"},
+                {"id": "lang_hi", "title": "Hindi"},
+                {"id": "lang_en", "title": "English"},
+                {"id": "lang_te", "title": "Telugu"},
             ],
         )
-
-        # If HIGH/CRITICAL, alert trusted contact immediately
-        if response.should_alert_contact:
-            from app.agent.scam_detector import DetectionResult
-            detection = DetectionResult(
-                risk_score=response.risk_score,
-                risk_level=response.risk_level,
-            )
-            await alert_flow.send_trusted_alert(
-                user=user,
-                transaction=transaction,
-                risk=detection,
-            )
 
         await db.commit()
 
         return {
             "status": "intercepted",
             "transaction_id": transaction.id,
-            "risk_score": response.risk_score,
-            "risk_level": response.risk_level.value,
-            "action": response.action,
-            "message_sent": response.message[:100] + "...",
+            "risk_score": risk.total_score,
+            "risk_level": risk.risk_level.value,
+            "action": "AWAITING_LANGUAGE",
+            "message_sent": "Language selection sent to user via WhatsApp",
         }
 
 
@@ -528,8 +577,10 @@ async def _get_active_session(
     """Find an active conversation session or create a new one."""
     active_states = [
         SessionState.IDLE,
+        SessionState.AWAITING_LANGUAGE,
         SessionState.TRANSACTION_DETECTED,
         SessionState.QUESTIONING,
+        SessionState.AWAITING_SCAM_TYPE,
         SessionState.RECOVERY_IN_PROGRESS,
     ]
 
