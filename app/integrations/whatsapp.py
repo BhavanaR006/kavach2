@@ -14,7 +14,7 @@ from loguru import logger
 from app.config import settings
 
 
-BASE_URL = "https://graph.facebook.com/v18.0"
+BASE_URL = "https://graph.facebook.com/v25.0"
 
 
 @dataclass
