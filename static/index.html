@@ -287,8 +287,8 @@
                 if (data.risk_score > 50) {
                     addMsg('Risk: '+data.risk_score+'/100 ('+data.risk_level+') | Action: '+data.action, 'sys');
                 }
-                if (data.should_alert_contact) {
-                    addMsg('Trusted contact would be alerted NOW', 'alert');
+                if (data.should_start_recovery) {
+                    addMsg('ALERT sent to trusted contact. Recovery flow activated.', 'alert');
                 }
 
                 // Store payload for payload tab
