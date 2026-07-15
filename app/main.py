@@ -158,20 +158,25 @@ async def receive_whatsapp(request: Request):
 
     logger.info(f"WhatsApp message from {message.from_number}: {message.text[:50]}")
 
+    # Normalize phone number to E.164 format
+    phone = message.from_number
+    if not phone.startswith("+"):
+        phone = "+" + phone
+
     # Process in a database session
     async with async_session_factory() as db:
         # Find or create user
-        user = await _get_or_create_user(db, message.from_number)
+        user = await _get_or_create_user(db, phone)
 
         # Find or create conversation session
-        session = await _get_active_session(db, message.from_number)
+        session = await _get_active_session(db, phone)
 
         # Find associated transaction if any
-        transaction = await _get_pending_transaction(db, message.from_number)
+        transaction = await _get_pending_transaction(db, phone)
 
         # Process through agent
         response = await kavach_agent.process_message(
-            phone=message.from_number,
+            phone=phone,
             message=message.text,
             session=session,
             transaction=transaction,
@@ -196,7 +201,7 @@ async def receive_whatsapp(request: Request):
             # Send interactive list for scam type selection
             from app.utils.language_utils import get_scam_type_question, get_scam_options_for_list
             await whatsapp_client.send_list(
-                to=message.from_number,
+                to=phone,
                 body=get_scam_type_question(user.language_preference),
                 button_text="Select",
                 sections=get_scam_options_for_list(),
@@ -204,7 +209,7 @@ async def receive_whatsapp(request: Request):
         else:
             # Send the agent's response message
             await whatsapp_client.send_message(
-                to=message.from_number,
+                to=phone,
                 message=response.message,
             )
 
