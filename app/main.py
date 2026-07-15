@@ -283,8 +283,8 @@ async def run_demo():
     2. User confirms pressure (reply "1")
     3. Recovery flow execution
     """
-    demo_phone = "+919999999999"
-    demo_trusted = "+918888888888"
+    demo_phone = "+918977533468"
+    demo_trusted = "+918977533468"
     demo_recipient = "+917777777777"
 
     async with async_session_factory() as db:
