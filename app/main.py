@@ -182,16 +182,20 @@ async def receive_whatsapp(request: Request):
             user.language_preference = selected_lang
             session.state = SessionState.QUESTIONING.value
 
-            # Send "Are you being forced?" with Yes/No buttons
+            # Send "Are you being forced?" with Yes/No buttons in their language
             from app.utils.language_utils import get_transaction_question
             amount = transaction.amount if transaction else 0
             question = get_transaction_question(selected_lang, amount)
+
+            yes_labels = {"hi": "Haan", "en": "Yes", "te": "Avunu", "ta": "Aam", "bn": "Hyaan"}
+            no_labels = {"hi": "Nahi", "en": "No", "te": "Ledu", "ta": "Illa", "bn": "Na"}
+
             await whatsapp_client.send_buttons(
                 to=phone,
                 body=question,
                 buttons=[
-                    {"id": "yes_forced", "title": "Haan / Yes"},
-                    {"id": "no_safe", "title": "Nahi / No"},
+                    {"id": "yes_forced", "title": yes_labels.get(selected_lang, "Yes")},
+                    {"id": "no_safe", "title": no_labels.get(selected_lang, "No")},
                 ],
             )
 
@@ -209,12 +213,12 @@ async def receive_whatsapp(request: Request):
                     detection = DetectionResult(risk_score=80, risk_level=RiskLevel.CRITICAL)
                     await alert_flow.send_trusted_alert(user=user, transaction=transaction, risk=detection)
 
-                # Send scam type list
+                # Send scam type list in user's language
                 await whatsapp_client.send_list(
                     to=phone,
                     body=get_scam_type_question(user.language_preference),
                     button_text="Select",
-                    sections=get_scam_options_for_list(),
+                    sections=get_scam_options_for_list(user.language_preference),
                 )
             elif is_negative(user_input):
                 session.state = SessionState.CONFIRMED_SAFE.value

@@ -249,32 +249,48 @@ SCAM_TYPE_QUESTIONS: dict[str, str] = {
     "en": "Kavach will help you. Tell us what happened — select below:",
 }
 
-# Detailed scam options for WhatsApp list message
-SCAM_OPTIONS: list[dict] = [
-    {"id": "digital_arrest", "title": "Digital Arrest", "description": "Someone on video call says I'm under arrest"},
-    {"id": "fake_police", "title": "Fake Police/CBI Call", "description": "Officer threatening arrest, asking money"},
-    {"id": "fake_rbi", "title": "Fake RBI/Bank Call", "description": "Says account will be frozen/blocked"},
-    {"id": "kyc_expiry", "title": "KYC/Aadhaar Threat", "description": "KYC expired, Aadhaar suspended, send OTP"},
-    {"id": "otp_demand", "title": "OTP/Money Demand", "description": "Someone asking for OTP or transfer"},
-    {"id": "customs_parcel", "title": "Customs/Parcel Scam", "description": "Drugs found in your parcel, pay fine"},
-    {"id": "lottery_prize", "title": "Lottery/Prize Won", "description": "Pay processing fee to claim prize"},
-    {"id": "job_offer", "title": "Fake Job Offer", "description": "Invest money first to start earning"},
-    {"id": "loan_offer", "title": "Loan Pre-approved", "description": "Pay charges to activate loan"},
-    {"id": "other", "title": "Something Else", "description": "None of the above, will type"},
-]
+# Detailed scam options for WhatsApp list message (per language)
+SCAM_OPTIONS_BY_LANG: dict[str, list[dict]] = {
+    "hi": [
+        {"id": "digital_arrest", "title": "Digital Arrest", "description": "Video call pe arrest ki dhamki"},
+        {"id": "fake_police", "title": "Fake Police/CBI", "description": "Police/CBI banke call kiya"},
+        {"id": "fake_rbi", "title": "Fake RBI/Bank", "description": "Account freeze ki dhamki"},
+        {"id": "kyc_expiry", "title": "KYC/Aadhaar", "description": "KYC expire, Aadhaar block"},
+        {"id": "otp_demand", "title": "OTP/Paisa maanga", "description": "OTP ya paisa transfer maanga"},
+        {"id": "customs_parcel", "title": "Customs/Parcel", "description": "Parcel mein drugs, fine bharo"},
+        {"id": "lottery_prize", "title": "Lottery/Prize", "description": "Prize jeeta, fee bharo"},
+        {"id": "job_offer", "title": "Fake Job", "description": "Pehle invest karo phir kamao"},
+        {"id": "loan_offer", "title": "Loan Scam", "description": "Loan ke liye charges bharo"},
+        {"id": "other", "title": "Kuch aur", "description": "Upar mein se koi nahi"},
+    ],
+    "en": [
+        {"id": "digital_arrest", "title": "Digital Arrest", "description": "Threatened arrest on video call"},
+        {"id": "fake_police", "title": "Fake Police/CBI", "description": "Called pretending to be police"},
+        {"id": "fake_rbi", "title": "Fake RBI/Bank", "description": "Threatened to freeze account"},
+        {"id": "kyc_expiry", "title": "KYC/Aadhaar", "description": "KYC expired, Aadhaar blocked"},
+        {"id": "otp_demand", "title": "OTP/Money asked", "description": "Asked for OTP or money"},
+        {"id": "customs_parcel", "title": "Customs/Parcel", "description": "Drugs in parcel, pay fine"},
+        {"id": "lottery_prize", "title": "Lottery/Prize", "description": "Won prize, pay fee"},
+        {"id": "job_offer", "title": "Fake Job", "description": "Invest first to earn"},
+        {"id": "loan_offer", "title": "Loan Scam", "description": "Pay charges for loan"},
+        {"id": "other", "title": "Something else", "description": "None of the above"},
+    ],
+    "te": [
+        {"id": "digital_arrest", "title": "Digital Arrest", "description": "Video call lo arrest bedirinpu"},
+        {"id": "fake_police", "title": "Fake Police/CBI", "description": "Police/CBI ga call chesaru"},
+        {"id": "fake_rbi", "title": "Fake RBI/Bank", "description": "Account freeze chestamani"},
+        {"id": "kyc_expiry", "title": "KYC/Aadhaar", "description": "KYC expire, Aadhaar block"},
+        {"id": "otp_demand", "title": "OTP/Dabbu", "description": "OTP leda dabbu adigaru"},
+        {"id": "customs_parcel", "title": "Customs/Parcel", "description": "Parcel lo drugs, fine kattandi"},
+        {"id": "lottery_prize", "title": "Lottery/Prize", "description": "Prize gelicharu, fee kattandi"},
+        {"id": "job_offer", "title": "Fake Job", "description": "Mundu invest cheyandi"},
+        {"id": "loan_offer", "title": "Loan Scam", "description": "Loan kosam charges"},
+        {"id": "other", "title": "Vere edi", "description": "Paina evi kaadu"},
+    ],
+}
 
-# Scam type mapping from user's choice
+# Scam type mapping from user selection ID
 SCAM_TYPE_MAP: dict[str, str] = {
-    "1": "DIGITAL_ARREST",
-    "2": "AUTHORITY_IMPERSONATION",
-    "3": "AUTHORITY_IMPERSONATION",
-    "4": "KYC_FRAUD",
-    "5": "FINANCIAL_DEMAND",
-    "6": "DIGITAL_ARREST",
-    "7": "FINANCIAL_DEMAND",
-    "8": "FINANCIAL_DEMAND",
-    "9": "FINANCIAL_DEMAND",
-    "10": "OTHER",
     "digital_arrest": "DIGITAL_ARREST",
     "fake_police": "AUTHORITY_IMPERSONATION",
     "fake_rbi": "AUTHORITY_IMPERSONATION",
@@ -285,6 +301,11 @@ SCAM_TYPE_MAP: dict[str, str] = {
     "job_offer": "FINANCIAL_DEMAND",
     "loan_offer": "FINANCIAL_DEMAND",
     "other": "OTHER",
+    "1": "DIGITAL_ARREST",
+    "2": "AUTHORITY_IMPERSONATION",
+    "3": "AUTHORITY_IMPERSONATION",
+    "4": "KYC_FRAUD",
+    "5": "FINANCIAL_DEMAND",
 }
 
 
@@ -293,11 +314,14 @@ def get_scam_type_question(language: str) -> str:
     return SCAM_TYPE_QUESTIONS.get(language, SCAM_TYPE_QUESTIONS["en"])
 
 
-def get_scam_options_for_list() -> list[dict]:
-    """Get scam options formatted for WhatsApp list message."""
-    return [
-        {
-            "title": "Select what happened",
-            "rows": SCAM_OPTIONS,
-        }
-    ]
+def get_scam_options_for_list(language: str = "hi") -> list[dict]:
+    """Get scam options formatted for WhatsApp list message in user's language."""
+    options = SCAM_OPTIONS_BY_LANG.get(language, SCAM_OPTIONS_BY_LANG["en"])
+    section_titles = {
+        "hi": "Kya hua - chunein",
+        "en": "What happened - select",
+        "te": "Emi jarigindi - select",
+        "ta": "Enna nadanthathu",
+        "bn": "Ki hoyeche - select",
+    }
+    return [{"title": section_titles.get(language, "Select"), "rows": options}]
