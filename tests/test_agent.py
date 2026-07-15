@@ -169,7 +169,7 @@ class TestAgentQuestioningState:
     async def test_affirmative_response_triggers_recovery(
         self, agent, mock_user, mock_session
     ):
-        """User saying 'yes' during questioning should trigger recovery."""
+        """User saying 'yes' during questioning should ask scam type then trigger recovery."""
         mock_session.state = SessionState.QUESTIONING
         mock_session.risk_score = 60
 
@@ -192,9 +192,10 @@ class TestAgentQuestioningState:
                 user=mock_user,
             )
 
-        assert response.action == "RECOVERY"
+        # Now asks scam type (not immediate recovery)
+        assert response.action == "ASK_SCAM_TYPE"
         assert response.risk_level == RiskLevel.CRITICAL
-        assert response.should_start_recovery is True
+        assert response.should_alert_contact is True
         assert mock_session.state == SessionState.CONFIRMED_RISK
 
     @pytest.mark.asyncio

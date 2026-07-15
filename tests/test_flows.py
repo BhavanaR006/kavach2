@@ -137,7 +137,7 @@ class TestDetectFlowStateTransitions:
     async def test_process_response_affirmative(
         self, flow, transaction, user, session
     ):
-        """Affirmative response should move to CONFIRMED_RISK."""
+        """Affirmative response should move to CONFIRMED_RISK and ask scam type."""
         session.state = SessionState.QUESTIONING
         session.risk_score = 60
 
@@ -158,7 +158,8 @@ class TestDetectFlowStateTransitions:
             )
 
         assert session.state == SessionState.CONFIRMED_RISK
-        assert response.should_start_recovery is True
+        assert response.should_alert_contact is True
+        assert response.action == "ASK_SCAM_TYPE"  # Asks scam type now
 
     @pytest.mark.asyncio
     async def test_process_response_negative(

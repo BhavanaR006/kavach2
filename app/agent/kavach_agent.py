@@ -191,6 +191,12 @@ class KavachAgent:
                 message, detection, session, language
             )
 
+        # Handle scam type selection (after user confirmed pressure)
+        if session.state == SessionState.CONFIRMED_RISK:
+            return self._handle_scam_type_response(
+                message, session, language
+            )
+
         # Handle based on current state
         if session.state == SessionState.TRANSACTION_DETECTED:
             return self._handle_transaction_detected(
@@ -267,17 +273,18 @@ class KavachAgent:
             AgentResponse based on user confirmation.
         """
         if is_affirmative(message):
-            # User confirms they are being pressured
+            # User confirms they are being pressured — ask what happened
+            from app.utils.language_utils import get_scam_type_question
             session.state = SessionState.CONFIRMED_RISK
             session.risk_score = max(session.risk_score, 80)
             session.risk_level = RiskLevel.CRITICAL.value
             return AgentResponse(
-                message=self._get_critical_message(language),
-                action="RECOVERY",
+                message=get_scam_type_question(language),
+                action="ASK_SCAM_TYPE",
                 risk_level=RiskLevel.CRITICAL,
                 risk_score=session.risk_score,
                 should_alert_contact=True,
-                should_start_recovery=True,
+                should_start_recovery=False,
             )
 
         if is_negative(message):
@@ -300,6 +307,39 @@ class KavachAgent:
             risk_score=detection.risk_score,
             should_alert_contact=False,
             should_start_recovery=False,
+        )
+
+    def _handle_scam_type_response(
+        self,
+        message: str,
+        session: ConversationSession,
+        language: str,
+    ) -> AgentResponse:
+        """
+        Handle user's scam type selection after confirming pressure.
+
+        Args:
+            message: User's reply (1-5 or free text).
+            session: Current session.
+            language: User's language.
+
+        Returns:
+            AgentResponse triggering recovery with scam context.
+        """
+        from app.utils.language_utils import SCAM_TYPE_MAP
+
+        # Map their choice to scam type
+        scam_type = SCAM_TYPE_MAP.get(message.strip(), "OTHER")
+        session.add_message("system", f"Scam type identified: {scam_type}")
+        session.state = SessionState.RECOVERY_IN_PROGRESS
+
+        return AgentResponse(
+            message=self._get_critical_message(language),
+            action="RECOVERY",
+            risk_level=RiskLevel.CRITICAL,
+            risk_score=session.risk_score,
+            should_alert_contact=False,  # Already alerted in previous step
+            should_start_recovery=True,
         )
 
     def _handle_transaction_detected(

@@ -142,6 +142,106 @@ class WhatsAppClient:
             logger.error(f"WhatsApp template also failed: {e}")
             return False
 
+    async def send_buttons(
+        self, to: str, body: str, buttons: list[dict[str, str]]
+    ) -> bool:
+        """
+        Send interactive reply buttons (max 3). User taps instead of typing.
+
+        Args:
+            to: Recipient phone number.
+            body: Message body text.
+            buttons: List of {"id": "btn_1", "title": "Yes"} (max 3).
+
+        Returns:
+            True if sent successfully.
+        """
+        if not self._enabled:
+            logger.info(f"[WhatsApp MOCK] Buttons to: {to} | {body} | {buttons}")
+            return True
+
+        url = f"{BASE_URL}/{self.phone_number_id}/messages"
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to.lstrip("+"),
+            "type": "interactive",
+            "interactive": {
+                "type": "button",
+                "body": {"text": body},
+                "action": {
+                    "buttons": [
+                        {"type": "reply", "reply": {"id": b["id"], "title": b["title"]}}
+                        for b in buttons[:3]
+                    ]
+                },
+            },
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(url, json=payload, headers=self.headers)
+                response.raise_for_status()
+                logger.info(f"WhatsApp buttons sent to {to}")
+                return True
+        except httpx.HTTPStatusError as e:
+            logger.warning(f"Buttons failed ({e.response.status_code}), sending as text")
+            text = body + "\n\n" + "\n".join(f"{i+1}. {b['title']}" for i, b in enumerate(buttons))
+            return await self.send_message(to, text)
+        except httpx.RequestError as e:
+            logger.error(f"WhatsApp buttons request failed: {e}")
+            return False
+
+    async def send_list(
+        self, to: str, body: str, button_text: str, sections: list[dict]
+    ) -> bool:
+        """
+        Send interactive list message. User taps to open menu and selects.
+
+        Args:
+            to: Recipient phone number.
+            body: Message body text.
+            button_text: Text on the list button (e.g. "Select option").
+            sections: List of sections with rows.
+
+        Returns:
+            True if sent successfully.
+        """
+        if not self._enabled:
+            logger.info(f"[WhatsApp MOCK] List to: {to} | {body}")
+            return True
+
+        url = f"{BASE_URL}/{self.phone_number_id}/messages"
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to.lstrip("+"),
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": body},
+                "action": {
+                    "button": button_text,
+                    "sections": sections,
+                },
+            },
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(url, json=payload, headers=self.headers)
+                response.raise_for_status()
+                logger.info(f"WhatsApp list sent to {to}")
+                return True
+        except httpx.HTTPStatusError as e:
+            logger.warning(f"List failed ({e.response.status_code}), sending as text")
+            text = body + "\n\n"
+            for section in sections:
+                for row in section.get("rows", []):
+                    text += f"- {row['title']}\n"
+            return await self.send_message(to, text)
+        except httpx.RequestError as e:
+            logger.error(f"WhatsApp list request failed: {e}")
+            return False
+
     async def send_template_message(
         self,
         to: str,

@@ -192,6 +192,15 @@ async def receive_whatsapp(request: Request):
 
         if response.should_start_recovery and transaction:
             await recovery_flow.execute(session, user, transaction)
+        elif response.action == "ASK_SCAM_TYPE":
+            # Send interactive list for scam type selection
+            from app.utils.language_utils import get_scam_type_question, get_scam_options_for_list
+            await whatsapp_client.send_list(
+                to=message.from_number,
+                body=get_scam_type_question(user.language_preference),
+                button_text="Select",
+                sections=get_scam_options_for_list(),
+            )
         else:
             # Send the agent's response message
             await whatsapp_client.send_message(
@@ -240,10 +249,14 @@ async def initiate_transaction(txn: TransactionCreate):
             session=session,
         )
 
-        # Send the detection question to user via WhatsApp
-        await whatsapp_client.send_message(
+        # Send the detection question to user via WhatsApp (with buttons)
+        await whatsapp_client.send_buttons(
             to=txn.user_phone,
-            message=response.message,
+            body=response.message,
+            buttons=[
+                {"id": "yes_forced", "title": "Haan / Yes"},
+                {"id": "no_safe", "title": "Nahi / No"},
+            ],
         )
 
         # If HIGH/CRITICAL, alert trusted contact immediately
@@ -332,7 +345,19 @@ async def run_demo():
             user=user,
         )
 
-        # Step 6: Execute recovery flow
+        # Send the scam type question to user
+        await whatsapp_client.send_message(to=demo_phone, message=agent_response.message)
+
+        # Step 5b: Simulate user selecting scam type (1 = fake police/CBI)
+        agent_response2 = await kavach_agent.process_message(
+            phone=demo_phone,
+            message="1",
+            session=session,
+            transaction=transaction,
+            user=user,
+        )
+
+        # Step 6: Execute recovery flow (AGENTIC — all autonomous from here)
         recovery_messages = await recovery_flow.execute(session, user, transaction)
 
         await db.commit()

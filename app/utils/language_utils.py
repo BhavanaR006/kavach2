@@ -234,3 +234,66 @@ def is_negative(text: str) -> bool:
         "లేదు", "இல்லை",
     }
     return text.strip().lower() in negative_words
+
+
+# Scam type selection question (asked after user confirms pressure)
+SCAM_TYPE_QUESTIONS: dict[str, str] = {
+    "hi": "Kavach aapki madad karega. Batayein kya hua — neeche se chunein:",
+    "te": "Kavach మీకు సహాయం చేస్తుంది. ఏం జరిగిందో చెప్పండి:",
+    "ta": "Kavach உங்களுக்கு உதவும். என்ன நடந்தது சொல்லுங்கள்:",
+    "bn": "Kavach আপনাকে সাহায্য করবে। কী হয়েছে জানান:",
+    "en": "Kavach will help you. Tell us what happened — select below:",
+}
+
+# Detailed scam options for WhatsApp list message
+SCAM_OPTIONS: list[dict] = [
+    {"id": "digital_arrest", "title": "Digital Arrest", "description": "Someone on video call says I'm under arrest"},
+    {"id": "fake_police", "title": "Fake Police/CBI Call", "description": "Officer threatening arrest, asking money"},
+    {"id": "fake_rbi", "title": "Fake RBI/Bank Call", "description": "Says account will be frozen/blocked"},
+    {"id": "kyc_expiry", "title": "KYC/Aadhaar Threat", "description": "KYC expired, Aadhaar suspended, send OTP"},
+    {"id": "otp_demand", "title": "OTP/Money Demand", "description": "Someone asking for OTP or transfer"},
+    {"id": "customs_parcel", "title": "Customs/Parcel Scam", "description": "Drugs found in your parcel, pay fine"},
+    {"id": "lottery_prize", "title": "Lottery/Prize Won", "description": "Pay processing fee to claim prize"},
+    {"id": "job_offer", "title": "Fake Job Offer", "description": "Invest money first to start earning"},
+    {"id": "loan_offer", "title": "Loan Pre-approved", "description": "Pay charges to activate loan"},
+    {"id": "other", "title": "Something Else", "description": "None of the above, will type"},
+]
+
+# Scam type mapping from user's choice
+SCAM_TYPE_MAP: dict[str, str] = {
+    "1": "DIGITAL_ARREST",
+    "2": "AUTHORITY_IMPERSONATION",
+    "3": "AUTHORITY_IMPERSONATION",
+    "4": "KYC_FRAUD",
+    "5": "FINANCIAL_DEMAND",
+    "6": "DIGITAL_ARREST",
+    "7": "FINANCIAL_DEMAND",
+    "8": "FINANCIAL_DEMAND",
+    "9": "FINANCIAL_DEMAND",
+    "10": "OTHER",
+    "digital_arrest": "DIGITAL_ARREST",
+    "fake_police": "AUTHORITY_IMPERSONATION",
+    "fake_rbi": "AUTHORITY_IMPERSONATION",
+    "kyc_expiry": "KYC_FRAUD",
+    "otp_demand": "FINANCIAL_DEMAND",
+    "customs_parcel": "DIGITAL_ARREST",
+    "lottery_prize": "FINANCIAL_DEMAND",
+    "job_offer": "FINANCIAL_DEMAND",
+    "loan_offer": "FINANCIAL_DEMAND",
+    "other": "OTHER",
+}
+
+
+def get_scam_type_question(language: str) -> str:
+    """Get the scam type question text in user's language."""
+    return SCAM_TYPE_QUESTIONS.get(language, SCAM_TYPE_QUESTIONS["en"])
+
+
+def get_scam_options_for_list() -> list[dict]:
+    """Get scam options formatted for WhatsApp list message."""
+    return [
+        {
+            "title": "Select what happened",
+            "rows": SCAM_OPTIONS,
+        }
+    ]
