@@ -478,9 +478,15 @@ docker-compose up --build
 
 ## Note on WhatsApp Integration
 
-The prototype is **fully implemented** for WhatsApp Business Cloud API (see `app/integrations/whatsapp.py`). The complete webhook handler, message parser, and delivery logic is production-ready.
+WhatsApp Business Cloud API is **fully integrated and live** with real message delivery. The system sends interactive buttons and list messages — users just tap, no typing needed.
 
-**Why it's in mock mode:** Meta WhatsApp Business API requires business verification (takes days). The system operates in graceful degradation — messages are logged to console instead of sent via WhatsApp. When credentials are added, it switches to live delivery with **zero code changes**.
+**WhatsApp token expires every 24 hours** (Meta's standard for test mode). To regenerate:
+1. Go to developers.facebook.com → Kavach2 app → API Setup
+2. Click "Generate access token"
+3. Update `WHATSAPP_ACCESS_TOKEN` in Vercel environment variables
+4. Redeploy
+
+In production, a permanent System User token would be used (no daily regeneration).
 
 ---
 
