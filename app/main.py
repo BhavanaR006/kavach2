@@ -328,29 +328,35 @@ async def receive_whatsapp(request: Request):
 # --- Transaction Initiation (Simulated UPI Hook) ---
 
 @app.post("/api/transaction/initiate")
-async def initiate_transaction(txn: TransactionCreate):
+async def initiate_transaction(request: Request):
     """
     Simulated UPI payment hook for demo purposes.
 
-    When a transaction is initiated, Kavach intercepts it,
-    scores risk, and sends language selection to user.
+    Accepts both TransactionCreate format and simplified UI format.
     """
+    body = await request.json()
+
+    # Support both formats
+    user_phone = body.get("user_phone") or body.get("phone", "+919999999999")
+    recipient_phone = body.get("recipient_phone") or body.get("recipient", "+917777777777")
+    amount = float(body.get("amount", 40000))
+
     async with async_session_factory() as db:
         # Find or create user
-        user = await _get_or_create_user(db, txn.user_phone)
+        user = await _get_or_create_user(db, user_phone)
 
         # Create transaction record
         transaction = Transaction(
-            user_phone=txn.user_phone,
-            recipient_phone=txn.recipient_phone,
-            amount=txn.amount,
+            user_phone=user_phone,
+            recipient_phone=recipient_phone,
+            amount=amount,
             status=TransactionStatus.PENDING,
         )
         db.add(transaction)
         await db.flush()
 
         # Create or get conversation session
-        session = await _get_active_session(db, txn.user_phone)
+        session = await _get_active_session(db, user_phone)
         session.transaction_id = transaction.id
 
         # Score the transaction
@@ -369,8 +375,8 @@ async def initiate_transaction(txn: TransactionCreate):
 
         # Send language selection buttons
         await whatsapp_client.send_buttons(
-            to=txn.user_phone,
-            body=f"Kavach detected a risky transaction (Rs {txn.amount:,.0f} to unknown account). Please select your language:",
+            to=user_phone,
+            body=f"Kavach detected a risky transaction (Rs {amount:,.0f} to unknown account). Please select your language:",
             buttons=[
                 {"id": "lang_hi", "title": "Hindi"},
                 {"id": "lang_en", "title": "English"},

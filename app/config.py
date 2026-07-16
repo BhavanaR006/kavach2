@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Google Gemini API (FREE - recommended for demo)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key (free tier)")
 
+    # Groq API (FREE - fast, reliable alternative)
+    GROQ_API_KEY: str = Field(default="", description="Groq API key (free tier, 30 req/min)")
+
     # WhatsApp Business Cloud API
     WHATSAPP_ACCESS_TOKEN: str = Field(default="", description="Meta WhatsApp access token")
     WHATSAPP_PHONE_NUMBER_ID: str = Field(default="", description="WhatsApp phone number ID")
