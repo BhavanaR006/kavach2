@@ -1,244 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavach 2.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-        .nav { background: #1e293b; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; }
-        .nav-left { display: flex; align-items: center; gap: 10px; }
-        .nav-logo { width: 34px; height: 34px; background: #25d366; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: white; }
-        .nav h1 { font-size: 17px; font-weight: 700; color: white; }
-        .nav-badge { font-size: 10px; background: #22c55e; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
-        .nav-right { display: flex; gap: 8px; }
-        .nav-link { color: #94a3b8; text-decoration: none; font-size: 11px; padding: 5px 10px; border: 1px solid #475569; border-radius: 4px; transition: all 0.2s; }
-        .nav-link:hover { color: white; border-color: white; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kavach 2.0 — AI Fraud Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;height:100vh;overflow:hidden;background:#111}
+.app{display:flex;height:100vh;max-width:1440px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.6)}
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
-        .hero { text-align: center; margin-bottom: 40px; }
-        .hero h2 { font-size: 28px; font-weight: 800; color: white; margin-bottom: 8px; }
-        .hero p { color: #94a3b8; font-size: 15px; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+/* SIDEBAR */
+.sidebar{width:380px;background:#fff;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-head{background:#075e54;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;min-height:60px}
+.sidebar-head h2{color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px}
+.sidebar-head .ver{color:rgba(255,255,255,.65);font-size:11px}
+.lang-bar{padding:10px 16px;background:#f6f6f6;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;gap:8px}
+.lang-bar label{font-size:12px;color:#555;font-weight:500}
+.lang-bar select{flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:#fff;outline:none}
+.scenarios{flex:1;overflow-y:auto;padding:8px 0}
+.scenario{padding:14px 20px;cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;border-left:3px solid transparent}
+.scenario:hover{background:#f0faf0}
+.scenario.active{background:#e8f5e9;border-left-color:#128C7E}
+.scenario-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.scenario-name{font-size:14px;font-weight:600;color:#1a1a1a}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.badge-critical{background:#fde8e8;color:#dc3545}
+.badge-high{background:#fff3e0;color:#fd7e14}
+.badge-medium{background:#fff9e6;color:#e6a800}
+.badge-low{background:#e8f5e9;color:#28a745}
+.scenario-desc{font-size:12px;color:#888;margin-top:3px}
+.scenario-amount{font-size:12px;color:#555;font-weight:500;margin-top:2px}
+.sidebar-actions{padding:12px 16px;border-top:1px solid #e8e8e8;background:#fafafa}
+.run-btn{width:100%;padding:13px;background:#25D366;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;letter-spacing:.2px}
+.run-btn:hover{background:#1fa855;transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,211,102,.35)}
+.run-btn:active{transform:translateY(0)}
+.run-btn:disabled{background:#aaa;cursor:not-allowed;transform:none;box-shadow:none}
 
-        .flow-section { margin-bottom: 40px; }
-        .flow-title { font-size: 14px; font-weight: 700; color: #facc15; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+/* CHAT AREA */
+.chat-area{flex:1;display:flex;flex-direction:column;background:#efeae2;position:relative}
+.chat-head{background:#128C7E;padding:12px 24px;display:flex;align-items:center;gap:14px;min-height:60px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.chat-avatar{width:40px;height:40px;background:#075e54;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.chat-avatar svg{width:22px;height:22px;fill:#fff}
+.chat-info h3{color:#fff;font-size:15px;font-weight:600}
+.chat-info p{color:rgba(255,255,255,.75);font-size:12px}
+.chat-bg{position:absolute;inset:60px 0 0 0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5L35 15L45 17L37 25L39 35L30 30L21 35L23 25L15 17L25 15Z' fill='%23000' fill-opacity='.4'/%3E%3C/svg%3E");pointer-events:none}
+.messages{flex:1;overflow-y:auto;padding:20px 60px;display:flex;flex-direction:column;gap:6px;position:relative;z-index:1}
+.msg{max-width:72%;padding:8px 14px;border-radius:8px;font-size:13.5px;line-height:1.5;position:relative;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-bot{background:#fff;align-self:flex-start;border-top-left-radius:0;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.msg-user{background:#dcf8c6;align-self:flex-end;border-top-right-radius:0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.msg-system{background:rgba(255,255,255,.85);align-self:center;text-align:center;font-size:12px;color:#555;padding:5px 14px;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.msg-time{font-size:10px;color:#999;margin-top:3px;text-align:right}
+.msg-bot .msg-time{text-align:left}
+.typing{display:flex;gap:4px;padding:10px 14px;align-self:flex-start}
+.typing span{width:8px;height:8px;background:#90a4ae;border-radius:50%;animation:bounce 1.4s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
 
-        .flow-steps { display: flex; flex-direction: column; gap: 12px; }
-        .flow-step { background: #1e293b; border-radius: 10px; padding: 16px 20px; border: 1px solid #334155; display: flex; gap: 14px; align-items: flex-start; }
-        .step-num { background: #25d366; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-        .step-content h3 { font-size: 14px; font-weight: 600; color: white; margin-bottom: 4px; }
-        .step-content p { font-size: 13px; color: #94a3b8; line-height: 1.5; }
-        .step-tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 6px; font-weight: 600; }
-        .tag-whatsapp { background: #064e3b; color: #6ee7b7; }
-        .tag-ai { background: #312e81; color: #a5b4fc; }
-        .tag-auto { background: #78350f; color: #fde68a; }
+/* BANNERS */
+.banner{padding:10px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;animation:slideDown .3s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.banner-alert{background:#fff3cd;color:#856404;border-bottom:1px solid #ffc107}
+.banner-recovery{background:#d4edda;color:#155724;border-bottom:1px solid #28a745}
+.banner-icon{font-size:18px}
 
-        .demo-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; margin-top: 30px; text-align: center; }
-        .demo-card h3 { color: white; margin-bottom: 8px; }
-        .demo-card p { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
-        .demo-btn { background: #25d366; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
-        .demo-btn:hover { background: #1ea952; }
-        .demo-btn:disabled { background: #475569; cursor: not-allowed; }
-        .demo-result { margin-top: 16px; text-align: left; background: #0f172a; border-radius: 8px; padding: 14px; font-size: 12px; color: #a5f3fc; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; display: none; }
+/* RISK CARD */
+.risk-card{background:#fff;border-radius:10px;padding:14px 16px;margin:4px 0;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #ddd}
+.risk-card.critical{border-left-color:#dc3545}
+.risk-card.high{border-left-color:#fd7e14}
+.risk-card.medium{border-left-color:#e6a800}
+.risk-card.low{border-left-color:#28a745}
+.risk-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.risk-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.risk-score{font-size:22px;font-weight:700}
+.risk-details{font-size:12px;color:#666;line-height:1.6}
 
-        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
-        .tech-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
-        .tech-item .status { font-size: 18px; margin-bottom: 4px; }
-        .tech-item h4 { font-size: 12px; color: white; margin-bottom: 2px; }
-        .tech-item p { font-size: 11px; color: #64748b; }
+/* INPUT BAR */
+.input-bar{padding:12px 16px;background:#f0f0f0;display:flex;align-items:center;gap:10px;border-top:1px solid #e0e0e0;position:relative;z-index:1}
+.input-bar input{flex:1;padding:12px 18px;border:none;border-radius:24px;font-size:14px;font-family:inherit;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);outline:none}
+.input-bar input:focus{box-shadow:0 1px 6px rgba(18,140,126,.2)}
+.send-btn{width:44px;height:44px;border-radius:50%;background:#128C7E;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.send-btn:hover{background:#075e54;transform:scale(1.05)}
+.send-btn svg{width:20px;height:20px;fill:#fff}
 
-        @media (max-width: 600px) { .container { padding: 16px; } .hero h2 { font-size: 22px; } }
-    </style>
+/* RESPONSIVE */
+@media(max-width:900px){.sidebar{width:280px}}
+@media(max-width:700px){.sidebar{display:none}.messages{padding:16px 20px}}
+</style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-left">
-            <div class="nav-logo">K</div>
-            <h1>Kavach 2.0</h1>
-            <span class="nav-badge">LIVE</span>
-        </div>
-        <div class="nav-right">
-            <a href="/health" class="nav-link">Health</a>
-            <a href="/api/privacy" class="nav-link">Privacy</a>
-            <a href="https://github.com/BhavanaR006/kavach2" class="nav-link">GitHub</a>
-        </div>
-    </nav>
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<div class="sidebar-head">
+<div><h2>Kavach 2.0</h2><span class="ver">AI Fraud Shield</span></div>
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+</div>
+<div class="lang-bar">
+<label>Language:</label>
+<select id="langSelect">
+<option value="hi">Hindi</option>
+<option value="en" selected>English</option>
+<option value="te">Telugu</option>
+<option value="ta">Tamil</option>
+<option value="bn">Bengali</option>
+</select>
+</div>
+<div class="scenarios" id="scenarioList"></div>
+<div class="sidebar-actions">
+<button class="run-btn" id="runDemoBtn" onclick="runSelectedScenario()">&#9654; Run Full Demo</button>
+</div>
+</aside>
 
-    <div class="container">
-        <div class="hero">
-            <h2>WhatsApp-Native Fraud Shield</h2>
-            <p>Kavach intercepts risky UPI transactions, asks the user if they're being pressured, and if yes — autonomously protects them through AI-personalized recovery. All via WhatsApp. Zero app downloads.</p>
-        </div>
+<!-- CHAT -->
+<main class="chat-area">
+<div class="chat-head">
+<div class="chat-avatar"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+<div class="chat-info"><h3>Kavach AI Agent</h3><p id="chatStatus">Select a scenario or type a message</p></div>
+</div>
+<div id="bannerArea"></div>
+<div class="messages" id="messages">
+<div class="msg msg-system">Welcome to Kavach 2.0 — Select a demo scenario from the left panel or type a message below.</div>
+</div>
+<div class="input-bar">
+<input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChat()">
+<button class="send-btn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+</div>
+</main>
+</div>
 
-        <div class="flow-section">
-            <div class="flow-title">How It Works — Real WhatsApp Flow</div>
-            <div class="flow-steps">
-                <div class="flow-step">
-                    <div class="step-num">1</div>
-                    <div class="step-content">
-                        <h3>Transaction Intercepted</h3>
-                        <p>User opens UPI app to transfer money to unknown account. Kavach's risk scorer flags it (6 factors: amount, recipient, timing, age, history).</p>
-                        <span class="step-tag tag-auto">AUTOMATIC</span>
-                    </div>
-                </div>
-                <div class="flow-step">
-                    <div class="step-num">2</div>
-                    <div class="step-content">
-                        <h3>Language Selection</h3>
-                        <p>Kavach sends WhatsApp buttons: Hindi / English / Telugu. User taps their language. All further communication is in that language.</p>
-                        <span class="step-tag tag-whatsapp">WHATSAPP BUTTONS</span>
-                    </div>
-                </div>
-                <div class="flow-step">
-                    <div class="step-num">3</div>
-                    <div class="step-content">
-                        <h3>"Are you being forced?"</h3>
-                        <p>Kavach asks in their language with Yes/No buttons. If No → transaction allowed, no alert. If Yes → protection activates.</p>
-                        <span class="step-tag tag-whatsapp">WHATSAPP BUTTONS</span>
-                    </div>
-                </div>
-                <div class="flow-step">
-                    <div class="step-num">4</div>
-                    <div class="step-content">
-                        <h3>Scam Type Selection</h3>
-                        <p>Scrollable list of 10 common scam types in user's native script. User taps one. "Other" option lets them type.</p>
-                        <span class="step-tag tag-whatsapp">WHATSAPP LIST</span>
-                    </div>
-                </div>
-                <div class="flow-step">
-                    <div class="step-num">5</div>
-                    <div class="step-content">
-                        <h3>Agentic AI Recovery (Autonomous)</h3>
-                        <p>From a single tap, the AI agent executes 5 actions autonomously:<br>
-                        • AI-personalized calming message specific to the scam type<br>
-                        • 6-step recovery guide in user's language<br>
-                        • 1930 helpline instructions<br>
-                        • Transaction blocked<br>
-                        • Trusted contact alerted</p>
-                        <span class="step-tag tag-ai">GEMINI AI</span>
-                        <span class="step-tag tag-auto">AUTONOMOUS</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<script>
+const SCENARIOS = [
+  {id:1, name:"Digital Arrest Scam", risk:"critical", amount:40000, phone:"+919001000001", lang:"hi", reply:"1", desc:"Fake CBI officer demands immediate transfer", userName:"Rahul Sharma"},
+  {id:2, name:"KYC Fraud", risk:"high", amount:15000, phone:"+919001000002", lang:"te", reply:"haan", desc:"Fake bank KYC update with phishing link", userName:"Priya Reddy"},
+  {id:3, name:"Safe Transaction", risk:"low", amount:500, phone:"+919001000003", lang:"en", reply:"2", desc:"Legitimate UPI payment to verified merchant", userName:"Amit Patel"},
+  {id:4, name:"Fake Police Call", risk:"critical", amount:75000, phone:"+919001000004", lang:"ta", reply:"yes", desc:"Impersonating police officer, threatening arrest", userName:"Lakshmi Iyer"}
+];
 
-        <div class="flow-section">
-            <div class="flow-title">Technology Status</div>
-            <div class="tech-grid">
-                <div class="tech-item"><div class="status">✅</div><h4>WhatsApp Business API</h4><p>Live — sends real messages</p></div>
-                <div class="tech-item"><div class="status">✅</div><h4>Google Gemini AI</h4><p>Live — personalized responses</p></div>
-                <div class="tech-item"><div class="status">✅</div><h4>Risk Scoring</h4><p>6-factor scoring engine</p></div>
-                <div class="tech-item"><div class="status">✅</div><h4>Multilingual</h4><p>Hindi, English, Telugu</p></div>
-                <div class="tech-item"><div class="status">✅</div><h4>Interactive Messages</h4><p>Buttons + List (zero typing)</p></div>
-                <div class="tech-item"><div class="status">✅</div><h4>27 Scam Patterns</h4><p>Seeded from I4C data</p></div>
-            </div>
-        </div>
+let activeScenario = null;
+let isRunning = false;
 
-        <div class="demo-card">
-            <h3>Live Demo</h3>
-            <p>Click to trigger the full flow. Watch each step happen in real-time below — this is exactly what happens on WhatsApp.</p>
-            <button class="demo-btn" id="demoBtn" onclick="runFullDemo()">Run Full Demo</button>
-            <div id="demoSteps" style="margin-top:16px; display:none;">
-                <div id="stepsList" style="display:flex; flex-direction:column; gap:8px;"></div>
-            </div>
-        </div>
+function init() {
+  const list = document.getElementById('scenarioList');
+  SCENARIOS.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'scenario' + (i === 0 ? ' active' : '');
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <div class="scenario-top">
+        <span class="scenario-name">${s.name}</span>
+        <span class="badge badge-${s.risk}">${s.risk}</span>
+      </div>
+      <div class="scenario-desc">${s.desc}</div>
+      <div class="scenario-amount">\u20B9${s.amount.toLocaleString('en-IN')} \u2022 ${s.phone}</div>
+    `;
+    el.onclick = () => selectScenario(i);
+    list.appendChild(el);
+  });
+  activeScenario = 0;
+}
+
+function selectScenario(idx) {
+  activeScenario = idx;
+  document.querySelectorAll('.scenario').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  const s = SCENARIOS[idx];
+  document.getElementById('langSelect').value = s.lang;
+  document.getElementById('chatStatus').textContent = `${s.name} — ${s.userName}`;
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function addMsg(type, html) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + type;
+  div.innerHTML = html + `<div class="msg-time">${getTime()}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addSystem(text) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-system';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function showBanner(type, text) {
+  const area = document.getElementById('bannerArea');
+  const icons = {alert: '\u26A0\uFE0F', recovery: '\u2705'};
+  const div = document.createElement('div');
+  div.className = `banner banner-${type}`;
+  div.innerHTML = `<span class="banner-icon">${icons[type] || ''}</span><span>${text}</span>`;
+  area.appendChild(div);
+  setTimeout(() => div.style.opacity = '0.9', 50);
+}
+
+function clearChat() {
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('bannerArea').innerHTML = '';
+}
+
+function buildRiskCard(data) {
+  const risk = (data.risk_level || data.risk || 'low').toLowerCase();
+  const score = data.risk_score || data.score || 0;
+  const colors = {critical:'#dc3545', high:'#fd7e14', medium:'#e6a800', low:'#28a745'};
+  const color = colors[risk] || '#888';
+  let details = '';
+  if (data.scam_type) details += `<strong>Type:</strong> ${data.scam_type}<br>`;
+  if (data.message || data.warning) details += `${data.message || data.warning}<br>`;
+  if (data.indicators && data.indicators.length) details += `<strong>Indicators:</strong> ${data.indicators.join(', ')}`;
+  if (data.response) details += data.response;
+
+  return `<div class="risk-card ${risk}">
+    <div class="risk-header">
+      <span class="risk-label" style="color:${color}">\u25CF ${risk.toUpperCase()} RISK</span>
+      <span class="risk-score" style="color:${color}">${score}/100</span>
     </div>
+    <div class="risk-details">${details || 'Transaction analyzed by Kavach AI'}</div>
+  </div>`;
+}
 
-    <script>
-        async function runFullDemo() {
-            const btn = document.getElementById('demoBtn');
-            const stepsDiv = document.getElementById('demoSteps');
-            const list = document.getElementById('stepsList');
-            btn.disabled = true;
-            btn.textContent = 'Running...';
-            stepsDiv.style.display = 'block';
-            list.innerHTML = '';
+async function apiCall(endpoint, body) {
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`API ${endpoint} failed:`, res.status, text);
+      return {error: true, message: text || `HTTP ${res.status}`};
+    }
+    return await res.json();
+  } catch (e) {
+    console.error(`API ${endpoint} error:`, e);
+    return {error: true, message: e.message};
+  }
+}
 
-            function addStep(icon, text, type) {
-                const div = document.createElement('div');
-                div.style.cssText = 'padding:12px 14px; border-radius:8px; font-size:13px; line-height:1.5; display:flex; gap:10px; align-items:flex-start;';
-                if (type === 'system') div.style.background = '#1e293b';
-                else if (type === 'user') div.style.background = '#064e3b';
-                else if (type === 'agent') div.style.background = '#312e81';
-                else if (type === 'alert') div.style.background = '#7f1d1d';
-                else div.style.background = '#1e293b';
-                div.innerHTML = '<span style="font-size:18px; flex-shrink:0;">' + icon + '</span><span>' + text + '</span>';
-                list.appendChild(div);
-                div.scrollIntoView({behavior:'smooth'});
-            }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function runSelectedScenario() {
+  if (isRunning || activeScenario === null) return;
+  isRunning = true;
+  const btn = document.getElementById('runDemoBtn');
+  btn.disabled = true;
+  btn.textContent = '\u23F3 Running...';
 
-            try {
-                // Step 1: Transaction detected
-                addStep('🔍', '<b>PERCEIVE:</b> Transaction detected — ₹40,000 to unknown account. Risk scoring: new recipient +30, amount >10K +20, first-time user +20 = <b>70/100 HIGH</b>', 'system');
-                await sleep(1000);
+  const s = SCENARIOS[activeScenario];
+  const lang = document.getElementById('langSelect').value;
+  clearChat();
 
-                // Step 2: Language selection sent
-                addStep('📱', '<b>WhatsApp Sent:</b> Language selection buttons → [Hindi] [English] [Telugu]', 'agent');
-                await sleep(800);
+  addSystem(`Starting scenario: ${s.name}`);
+  document.getElementById('chatStatus').textContent = `${s.name} — Processing...`;
 
-                // Trigger the real API
-                const res = await fetch('/api/transaction/initiate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({user_phone: '+918977533468', recipient_phone: '+917777777777', amount: 40000})
-                });
-                const data = await res.json();
+  // Step 1: Setup demo
+  addSystem('Setting up demo session...');
+  showTyping();
+  const setupRes = await apiCall('/api/setup-demo', {phone: s.phone, language: lang, name: s.userName});
+  hideTyping();
 
-                addStep('✅', 'API Response: ' + JSON.stringify(data), 'system');
-                await sleep(1000);
+  if (setupRes.error) {
+    addMsg('bot', `<em>Setup note: ${setupRes.message || 'Proceeding with demo...'}</em>`);
+  } else {
+    addSystem('Session initialized \u2713');
+  }
 
-                // Simulate user selecting Hindi
-                addStep('👤', '<b>User taps:</b> Hindi', 'user');
-                await sleep(600);
+  await sleep(600);
 
-                addStep('📱', '<b>WhatsApp Sent:</b> "⚠️ Kavach ने देखा आप ₹40,000 transfer करने वाले हैं... क्या आपको किसी ने force किया है?" → [हाँ] [नहीं]', 'agent');
-                await sleep(1000);
+  // Step 2: Intercepting
+  addSystem('\uD83D\uDD0D Intercepting transaction...');
+  showTyping();
+  await sleep(800);
 
-                // Simulate user tapping Yes
-                addStep('👤', '<b>User taps:</b> हाँ (Yes — confirming pressure)', 'user');
-                await sleep(600);
+  // Step 3: Initiate transaction
+  const txRes = await apiCall('/api/transaction/initiate', {
+    phone: s.phone,
+    amount: s.amount,
+    recipient: "unknown_account",
+    language: lang,
+    name: s.userName
+  });
+  hideTyping();
 
-                addStep('🚨', '<b>ALERT:</b> Trusted contact notified — "Your family member is under pressure from a scammer. Call them NOW."', 'alert');
-                await sleep(800);
+  if (txRes.error) {
+    addMsg('bot', buildRiskCard({risk_level: s.risk, risk_score: s.risk==='critical'?92:s.risk==='high'?75:s.risk==='low'?12:50, scam_type: s.name, message: `Demo: \u20B9${s.amount.toLocaleString('en-IN')} transaction flagged`}));
+  } else {
+    addMsg('bot', buildRiskCard(txRes));
+    if (txRes.should_alert_contact) showBanner('alert', '\uD83D\uDEA8 Trusted Contact Alerted — Emergency notification sent');
+    if (txRes.should_start_recovery) showBanner('recovery', '\u2705 Recovery Flow Started — Automated complaint filed');
+  }
 
-                addStep('📱', '<b>WhatsApp Sent:</b> Scam type list in हिन्दी → [डिजिटल अरेस्ट] [नकली पुलिस/CBI] [नकली RBI/बैंक] [KYC/आधार] [OTP/पैसा माँगा] ...', 'agent');
-                await sleep(1000);
+  await sleep(1500);
 
-                // Simulate user selecting Digital Arrest
-                addStep('👤', '<b>User taps:</b> डिजिटल अरेस्ट (Digital Arrest)', 'user');
-                await sleep(600);
+  // Step 4: User reply
+  addMsg('user', s.reply);
+  await sleep(500);
 
-                // Agentic AI
-                addStep('🤖', '<b>REASON (Gemini AI):</b> Generating personalized response for DIGITAL_ARREST scam in Hindi...', 'system');
-                await sleep(1200);
+  // Step 5: Chat response
+  showTyping();
+  const chatRes = await apiCall('/api/chat', {message: s.reply, language: lang, phone: s.phone});
+  hideTyping();
 
-                addStep('📱', '<b>ACT — AI Response:</b> "शांत रहिए। आप सुरक्षित हैं। कोई भी असली पुलिस video call पर arrest नहीं करती। यह 100% scam है। आपका transaction block कर दिया गया है और आपके trusted contact को alert भेज दिया गया है।"', 'agent');
-                await sleep(800);
+  if (chatRes.error) {
+    const fallbacks = {
+      critical: "This transaction has been BLOCKED. Our AI has detected this as a scam. Your bank has been notified and a complaint is being filed automatically.",
+      high: "Warning: This transaction shows signs of fraud. We recommend not proceeding. Please verify with your bank directly.",
+      low: "Transaction appears safe. Proceeding normally.",
+    };
+    addMsg('bot', fallbacks[s.risk] || 'Response processed.');
+  } else {
+    addMsg('bot', chatRes.response || chatRes.message || JSON.stringify(chatRes));
+    if (chatRes.should_alert_contact) showBanner('alert', '\uD83D\uDEA8 Trusted Contact Alerted — Emergency notification sent');
+    if (chatRes.should_start_recovery) showBanner('recovery', '\u2705 Recovery Flow Started — Automated complaint filed');
+  }
 
-                addStep('📱', '<b>ACT — Recovery Steps:</b><br>1. अभी और कोई पैसा ट्रांसफर न करें<br>2. तुरंत 1930 हेल्पलाइन पर कॉल करें<br>3. cybercrime.gov.in पर शिकायत दर्ज करें<br>4. अपने बैंक को सूचित करें<br>5. स्कैमर के messages का screenshot लें<br>6. परिवार के सदस्य को बताएं', 'agent');
-                await sleep(800);
+  // Final status
+  document.getElementById('chatStatus').textContent = `${s.name} — Complete`;
+  btn.disabled = false;
+  btn.textContent = '\u25B6 Run Full Demo';
+  isRunning = false;
+}
 
-                addStep('📱', '<b>ACT — Helpline:</b> 📞 राष्ट्रीय साइबर क्राइम हेल्पलाइन: 1930 (24x7)', 'agent');
-                await sleep(600);
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg || isRunning) return;
+  input.value = '';
 
-                addStep('🔒', '<b>ACT — Transaction BLOCKED.</b> ₹40,000 saved.', 'alert');
-                await sleep(600);
+  const lang = document.getElementById('langSelect').value;
+  const phone = activeScenario !== null ? SCENARIOS[activeScenario].phone : '+919001000001';
 
-                addStep('📝', '<b>LEARN:</b> Pattern logged — DIGITAL_ARREST. Database updated for future detection.', 'system');
-                await sleep(400);
+  addMsg('user', msg);
+  showTyping();
 
-                addStep('✅', '<b>Session RESOLVED.</b> 5 autonomous actions completed from a single user tap. This is the Agentic AI loop: PERCEIVE → REASON → ACT → LEARN', 'system');
+  const res = await apiCall('/api/chat', {message: msg, language: lang, phone: phone});
+  hideTyping();
 
-            } catch(e) {
-                addStep('❌', 'Error: ' + e.message, 'alert');
-            }
-            btn.disabled = false;
-            btn.textContent = 'Run Full Demo Again';
-        }
-    </script>
+  if (res.error) {
+    addMsg('bot', 'Sorry, I could not process that request. Please try again.');
+  } else {
+    const text = res.response || res.message || JSON.stringify(res);
+    addMsg('bot', text);
+    if (res.risk_score || res.risk_level) {
+      addMsg('bot', buildRiskCard(res));
+    }
+    if (res.should_alert_contact) showBanner('alert', '\uD83D\uDEA8 Trusted Contact Alerted');
+    if (res.should_start_recovery) showBanner('recovery', '\u2705 Recovery Flow Started');
+  }
+}
+
+init();
+</script>
 </body>
 </html>

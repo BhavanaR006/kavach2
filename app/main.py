@@ -674,3 +674,26 @@ async def _get_pending_transaction(
         .limit(1)
     )
     return result.scalar_one_or_none()
+
+
+# --- Setup Demo Endpoint ---
+
+@app.post("/api/setup-demo")
+async def setup_demo_user(request: Request):
+    """Set up a demo user with trusted contact for showcase."""
+    body = await request.json()
+    phone = body.get("phone", "+919999999999")
+    language = body.get("language", "hi")
+    name = body.get("name", "Demo User")
+
+    async with async_session_factory() as db:
+        user = await _get_or_create_user(db, phone)
+        user.name = name
+        user.language_preference = language
+        user.age = 54
+        user.is_first_time_user = True
+        user.trusted_contact_phone = "+918888888888"
+        user.trusted_contact_name = "Trusted Contact"
+        await db.commit()
+
+    return {"status": "ok", "phone": phone, "language": language}

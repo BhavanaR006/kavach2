@@ -9,6 +9,19 @@
 
 ---
 
+## Quick Start (30 seconds)
+
+1. Get a FREE Gemini API key at https://aistudio.google.com/apikey
+2. Clone: `git clone https://github.com/BhavanaR006/kavach2.git && cd kavach2`
+3. Create `.env` file and add: `GEMINI_API_KEY=your_key_here`
+4. Run: `pip install -r requirements.txt && uvicorn app.main:app --reload`
+5. Open http://localhost:8000
+6. Click any scenario in the sidebar to see Kavach in action!
+
+**Works with ZERO API keys too** — uses keyword-based detection as fallback.
+
+---
+
 ## Quick Start (Run on Your System)
 
 ### Step 1: Clone the repository
