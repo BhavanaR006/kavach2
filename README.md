@@ -1,506 +1,280 @@
-# Kavach 2.0 — Trusted Circle Agent
+# Kavach 2.0 — Trusted Circle Agent 🛡️
 
 > WhatsApp-Native Agentic AI Fraud Shield for India
 
-**Team Bloom** | Bhavana R — Solo Developer (Full Stack + AI/ML)
+**Team Bloom** · Bhavana R · IIT Gandhinagar · ScriptedBy{Her} 2.0 — Meesho
 
-**Live URL:** https://kavach2-theta.vercel.app  
-**GitHub:** https://github.com/BhavanaR006/kavach2
-
----
-
-## Quick Start (30 seconds)
-
-1. Get a FREE Gemini API key at https://aistudio.google.com/apikey
-2. Clone: `git clone https://github.com/BhavanaR006/kavach2.git && cd kavach2`
-3. Create `.env` file and add: `GEMINI_API_KEY=your_key_here`
-4. Run: `pip install -r requirements.txt && uvicorn app.main:app --reload`
-5. Open http://localhost:8000
-6. Click any scenario in the sidebar to see Kavach in action!
-
-**Works with ZERO API keys too** — uses keyword-based detection as fallback.
+| | |
+|---|---|
+| 🌐 **Live Demo** | https://kavach2-theta.vercel.app |
+| 💻 **GitHub** | https://github.com/BhavanaR006/kavach2 |
+| 📱 **Interface** | WhatsApp (+ Web UI for demo) |
+| 🤖 **AI Backend** | Groq → Gemini → Claude (cascading fallback) |
 
 ---
 
-## Quick Start (Run on Your System)
+## What is Kavach 2.0?
 
-### Step 1: Clone the repository
+Kavach 2.0 intercepts a UPI payment **before** it is made, asks the user a simple question in their own language, and — if they confirm they are under pressure — **silently alerts a pre-set trusted contact** (family member) to call them immediately. That is the moment the scam breaks.
 
+It then guides the user through full recovery: calming message → 6 recovery steps → pre-filled cybercrime.gov.in complaint → 1930 helpline instructions. All in Hindi, Telugu, Tamil, Bengali, or English.
+
+**The core insight:** Scams don't succeed because victims are careless. They succeed because victims are deliberately isolated. Kavach breaks that isolation before the money moves.
+
+---
+
+## Quick Start — Run Locally in 2 Minutes
+
+### Step 1: Clone the repo
 ```bash
 git clone https://github.com/BhavanaR006/kavach2.git
 cd kavach2
 ```
 
-### Step 2: Create virtual environment and install dependencies
-
+### Step 2: Create virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate        # macOS/Linux
-# OR
-venv\Scripts\activate           # Windows
+source venv/bin/activate       # macOS / Linux
+venv\Scripts\activate          # Windows
+```
 
+### Step 3: Install dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### Step 3: Set up environment (optional — works without any keys)
-
+### Step 4: Set up environment variables
 ```bash
 cp .env.example .env
-# The prototype runs fully without any API keys.
-# All external services degrade gracefully to mock/log mode.
 ```
+Open `.env` and fill in your keys (see [Environment Variables](#environment-variables) section below).
 
-### Step 4: Start the server
+> ✅ **The app works with ZERO API keys.** All services degrade gracefully — scam detection uses keyword fallback, messages are logged to console instead of sent. You can run the full demo without any keys.
 
+### Step 5: Start the server
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
 You should see:
 ```
-INFO:     Kavach 2.0 starting up...
-INFO:     Database tables created successfully
-INFO:     Seeded 27 scam patterns into database
-INFO:     Kavach 2.0 ready to protect!
-INFO:     Uvicorn running on http://0.0.0.0:8000
+INFO  — Kavach 2.0 starting up...
+INFO  — LLM Backend: Groq (free tier, fast)      ← if GROQ_API_KEY is set
+INFO  — Database tables created/verified
+INFO  — Seeded 27 scam patterns into database
+INFO  — Kavach 2.0 ready to protect!
+INFO  — Uvicorn running on http://0.0.0.0:8000
 ```
 
-### Step 5: Run tests
+### Step 6: Open the demo UI
+Go to → **http://localhost:8000**
 
+Click any scenario in the left sidebar to see Kavach in action.
+
+---
+
+## Environment Variables
+
+Create a `.env` file in the project root with the following:
+
+```env
+# ── AI / LLM (pick at least one — Groq is recommended, it's free) ──────────
+GROQ_API_KEY=            # FREE → https://console.groq.com/keys
+GEMINI_API_KEY=          # FREE → https://aistudio.google.com/apikey
+ANTHROPIC_API_KEY=       # Paid → https://console.anthropic.com (optional)
+
+# ── WhatsApp Business Cloud API (Meta) ──────────────────────────────────────
+WHATSAPP_ACCESS_TOKEN=       # developers.facebook.com → Your App → WhatsApp → API Setup
+WHATSAPP_PHONE_NUMBER_ID=    # Same page — long numeric ID below the token
+WHATSAPP_VERIFY_TOKEN=kavach_verify_2024   # Keep this exactly as shown
+
+# ── Twilio SMS (fallback if WhatsApp fails) ──────────────────────────────────
+TWILIO_ACCOUNT_SID=      # https://console.twilio.com
+TWILIO_AUTH_TOKEN=       # https://console.twilio.com
+TWILIO_PHONE_NUMBER=     # Format: +1xxxxxxxxxx
+
+# ── BHASHINI (Govt of India multilingual API) ────────────────────────────────
+BHASHINI_API_KEY=        # https://bhashini.gov.in/ulca (free, takes 1-2 days to approve)
+BHASHINI_USER_ID=        # Same portal
+
+# ── Database ─────────────────────────────────────────────────────────────────
+DATABASE_URL=sqlite+aiosqlite:///./kavach.db   # SQLite for local dev (default)
+
+# ── App Config ───────────────────────────────────────────────────────────────
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+```
+
+### Key descriptions
+
+| Variable | Required? | Where to get it | Notes |
+|---|---|---|---|
+| `GROQ_API_KEY` | Recommended | console.groq.com/keys | Free, fast, 30 req/min |
+| `GEMINI_API_KEY` | Optional | aistudio.google.com/apikey | Free fallback if Groq not set |
+| `ANTHROPIC_API_KEY` | Optional | console.anthropic.com | Paid, used as last resort |
+| `WHATSAPP_ACCESS_TOKEN` | Optional | Meta Developer Console | See ⚠️ note below |
+| `WHATSAPP_PHONE_NUMBER_ID` | Optional | Meta Developer Console | Found on same page as token |
+| `WHATSAPP_VERIFY_TOKEN` | Optional | Set yourself | Must match Meta webhook config |
+| `TWILIO_ACCOUNT_SID` | Optional | console.twilio.com | SMS fallback only |
+| `TWILIO_AUTH_TOKEN` | Optional | console.twilio.com | SMS fallback only |
+| `BHASHINI_API_KEY` | Optional | bhashini.gov.in/ulca | Pre-translated strings used as fallback |
+| `DATABASE_URL` | Optional | — | Defaults to local SQLite |
+
+### ⚠️ Important: WhatsApp Token Expires Every 24 Hours
+
+Meta's WhatsApp Business Cloud API issues a **temporary access token** that expires every 24 hours in test/development mode. You must regenerate it daily before testing live WhatsApp delivery.
+
+**How to regenerate:**
+1. Go to → https://developers.facebook.com/apps
+2. Select your app (Kavach2) → WhatsApp → API Setup
+3. Click **"Generate access token"** → copy it
+4. Update `WHATSAPP_ACCESS_TOKEN` in your `.env` file (local) and in Vercel environment variables (deployed)
+5. Redeploy on Vercel after updating
+
+> In production deployment, a permanent System User token would be configured — no daily regeneration needed. The 24-hour expiry is standard Meta developer/test mode behaviour.
+
+---
+
+## AI Priority Order (Cascading Fallback)
+
+Kavach tries AI providers in this order automatically:
+
+```
+1. Groq (FREE, fastest — llama3-8b-8192, ~0.5s response)
+        ↓ if not configured or fails
+2. Google Gemini (FREE — gemini-2.0-flash-lite)
+        ↓ if not configured or fails
+3. Anthropic Claude (Paid — claude-sonnet-4-6)
+        ↓ if not configured or fails
+4. Keyword-based detection (always works, no API needed)
+```
+
+**Recommendation:** Set `GROQ_API_KEY` — it is free, extremely fast, and has generous rate limits (30 req/min on free tier).
+
+---
+
+## Deploying to Vercel
+
+### Step 1: Push to GitHub
+```bash
+git add .
+git commit -m "your message"
+git push origin main
+```
+Vercel auto-deploys on every push (takes ~2 minutes).
+
+### Step 2: Add environment variables in Vercel
+- vercel.com → Your project → **Settings** → **Environment Variables**
+- Add each key from the table above
+- Click **Save** → then go to **Deployments** → **Redeploy**
+
+> ⚠️ Vercel does NOT show saved keys again — store them somewhere safe (e.g. a private Notes doc) before pasting into Vercel.
+
+---
+
+## Running Tests
 ```bash
 pytest tests/ -v
 ```
 
-Expected output: **34 tests passed**
-
----
-
-## Test Cases for Judges
-
-Once the server is running at `http://localhost:8000`, try these:
-
-### Test Case 1: Health Check
-
-```bash
-curl http://localhost:8000/health
-```
-
-**Expected Output:**
-```json
-{
-  "status": "healthy",
-  "service": "Kavach 2.0",
-  "environment": "development",
-  "timestamp": "2026-07-14T..."
-}
-```
-
----
-
-### Test Case 2: Full Demo (Runs Complete Fraud Prevention Scenario)
-
-```bash
-curl -X POST http://localhost:8000/demo
-```
-
-**What happens internally:**
-1. Creates user "Meena" (age 54, first-time digital user, Hindi-speaking)
-2. Creates a ₹40,000 transaction to an unknown recipient
-3. Risk scorer flags it as CRITICAL (score: 85/100) due to: new recipient +30, amount >₹10K +20, first-time user +20, age >50 +15
-4. Sends detection question in Hindi to Meena
-5. Simulates Meena confirming she is under pressure (reply "1")
-6. Alerts trusted contact (her son) via WhatsApp/SMS
-7. Executes full recovery flow: calming message → 6 recovery steps → complaint template → 1930 helpline info
-8. Logs incident, marks transaction as BLOCKED
-
-**Expected Output:**
-```json
-{
-  "status": "demo_completed",
-  "scenario": "Meena (54, Lucknow) - Digital Arrest Scam Prevention",
-  "steps": [
-    {"step": 1, "action": "Transaction intercepted", "amount": "₹40,000", "risk_score": 85, "risk_level": "CRITICAL"},
-    {"step": 2, "action": "Detection question sent to user", "message": "⚠️ Kavach ने देखा..."},
-    {"step": 3, "action": "User confirmed pressure", "response": "QUESTION", "risk_level": "LOW"},
-    {"step": 4, "action": "Trusted contact alerted", "contact": "+918888888888"},
-    {"step": 5, "action": "Recovery flow completed", "messages_sent": 4},
-    {"step": 6, "action": "Incident logged", "transaction_status": "BLOCKED", "session_state": "RESOLVED"}
-  ]
-}
-```
-
----
-
-### Test Case 3: Intercept a High-Risk Transaction
-
-```bash
-curl -X POST http://localhost:8000/api/transaction/initiate \
-  -H "Content-Type: application/json" \
-  -d '{"user_phone": "+919876543210", "recipient_phone": "+917777777777", "amount": 50000}'
-```
-
-**Expected Output:**
-```json
-{
-  "status": "intercepted",
-  "transaction_id": 1,
-  "risk_score": 70,
-  "risk_level": "HIGH",
-  "action": "QUESTION",
-  "message_sent": "⚠️ Kavach ने देखा आप ₹50,000 transfer करने वाले हैं..."
-}
-```
-
-**What the risk score means:**
-- New recipient: +30
-- Amount > ₹50,000: +40
-- Total: 70 → HIGH risk
-- Action: Send clarifying question to user
-
----
-
-### Test Case 4: Low-Risk Transaction
-
-```bash
-curl -X POST http://localhost:8000/api/transaction/initiate \
-  -H "Content-Type: application/json" \
-  -d '{"user_phone": "+919876543210", "recipient_phone": "+917777777777", "amount": 500}'
-```
-
-**Expected Output:**
-```json
-{
-  "status": "intercepted",
-  "risk_score": 30,
-  "risk_level": "MEDIUM",
-  "action": "QUESTION"
-}
-```
-
-Score is lower (30) because amount is small. Only "new recipient" (+30) applies.
-
----
-
-### Test Case 5: Simulate a Scam Message via WhatsApp Webhook
-
-```bash
-curl -X POST http://localhost:8000/webhook/whatsapp \
-  -H "Content-Type: application/json" \
-  -d '{
-    "entry": [{
-      "changes": [{
-        "value": {
-          "messages": [{
-            "from": "919876543210",
-            "id": "msg_test_001",
-            "timestamp": "1720000000",
-            "type": "text",
-            "text": {"body": "CBI se bol rahe hain. Aapke khilaf case file hua hai. Turant 50000 transfer karo nahi toh arrest ho jaoge. Kisi ko mat batana."}
-          }]
-        }
-      }]
-    }]
-  }'
-```
-
-**Expected Output:**
-```json
-{"status": "ok"}
-```
-
-**What happens in server logs (check terminal):**
-- Scam detector identifies: AUTHORITY_IMPERSONATION (CBI), URGENCY (turant), FINANCIAL_DEMAND (transfer), ISOLATION (mat batana)
-- Risk score: 70+ (HIGH)
-- Session state moves to QUESTIONING
-- Follow-up question sent to user (logged to console since WhatsApp is in mock mode)
-
----
-
-### Test Case 6: Simulate Safe Message
-
-```bash
-curl -X POST http://localhost:8000/webhook/whatsapp \
-  -H "Content-Type: application/json" \
-  -d '{
-    "entry": [{
-      "changes": [{
-        "value": {
-          "messages": [{
-            "from": "919999900000",
-            "id": "msg_test_002",
-            "timestamp": "1720000000",
-            "type": "text",
-            "text": {"body": "Hi, kaise ho? Kal dinner pe chalein?"}
-          }]
-        }
-      }]
-    }]
-  }'
-```
-
-**Expected:** Normal message, risk score 0, no alerts triggered.
-
----
-
-### Test Case 7: WhatsApp Webhook Verification
-
-```bash
-curl "http://localhost:8000/webhook/whatsapp?hub.mode=subscribe&hub.challenge=test_challenge_123&hub.verify_token=kavach_verify_2024"
-```
-
-**Expected Output:**
-```
-test_challenge_123
-```
-
-This is how Meta verifies the webhook endpoint is valid.
-
----
-
-### Test Case 8: Run Automated Test Suite
-
-```bash
-pytest tests/ -v
-```
-
-**Expected Output:**
-```
-tests/test_detector.py::TestKeywordDetection::test_authority_impersonation_english PASSED
-tests/test_detector.py::TestKeywordDetection::test_digital_arrest_hindi PASSED
-tests/test_detector.py::TestKeywordDetection::test_multiple_signals_compound PASSED
-tests/test_detector.py::TestKeywordDetection::test_safe_message_low_score PASSED
-tests/test_agent.py::TestAgentCriticalRisk::test_critical_risk_triggers_recovery PASSED
-tests/test_agent.py::TestAgentQuestioningState::test_affirmative_response_triggers_recovery PASSED
-tests/test_flows.py::TestDetectFlowInitiation::test_initiate_high_risk_alerts_contact PASSED
-...
-======================== 34 passed ========================
-```
-
----
-
-## Overview
-
-Kavach 2.0 intercepts UPI payment intent, runs a conversational coercion check with the user in their language, silently alerts a trusted contact if fraud is detected, and autonomously guides recovery.
-
-**Key Differentiators:**
-- Lives inside WhatsApp — no app download required
-- Works in Hindi, Telugu, Tamil, Bengali, and English
-- Agentic AI loop: PERCEIVE → REASON → ACT → LEARN
-- 27+ scam patterns covering digital arrest, KYC fraud, authority impersonation
-- Trusted Circle — silently alerts family/friends when fraud is detected
-- Auto-generates cybercrime.gov.in complaint templates
-- Graceful degradation — runs fully without any API keys
-
-**The Problem:** ₹22,500 Cr lost to cyber fraud in 2025 alone. 28 Lakh+ fraud cases filed (+24% YoY). 1 in 5 UPI users have been scammed. The primary weapon is isolation — victims are kept on calls for hours, forbidden to contact anyone.
-
-**Our Solution:** Protection where the people already are — inside WhatsApp.
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    USER (WhatsApp)                    │
-└──────────────────────┬──────────────────────────────┘
-                       │ webhook
-┌──────────────────────▼──────────────────────────────┐
-│              FastAPI Backend (main.py)                │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────┐  │
-│  │  WhatsApp   │  │  Transaction │  │   Demo    │  │
-│  │  Webhook    │  │  Initiation  │  │  Endpoint │  │
-│  └──────┬──────┘  └──────┬───────┘  └─────┬─────┘  │
-└─────────┼────────────────┼─────────────────┼────────┘
-          │                │                 │
-┌─────────▼────────────────▼─────────────────▼────────┐
-│              AGENT LAYER (Agentic Loop)               │
-│                                                       │
-│  PERCEIVE ──→ REASON ──→ ACT ──→ LEARN               │
-│      │            │          │        │               │
-│  [Context]  [ScamDetector] [Flows] [Patterns DB]     │
-│             [RiskScorer]                              │
-└───────────────────────────────────────────────────────┘
-          │                │                 │
-┌─────────▼────────────────▼─────────────────▼────────┐
-│              INTEGRATION LAYER                        │
-│  ┌─────────┐ ┌────────┐ ┌─────────┐ ┌───────────┐  │
-│  │ Gemini/ │ │WhatsApp│ │ Twilio  │ │ BHASHINI  │  │
-│  │ Claude  │ │  API   │ │  SMS    │ │Translation│  │
-│  └─────────┘ └────────┘ └─────────┘ └───────────┘  │
-└───────────────────────────────────────────────────────┘
-          │
-┌─────────▼───────────────────────────────────────────┐
-│              DATA LAYER                              │
-│  ┌──────────────┐  ┌──────────────────────────────┐ │
-│  │   SQLite /   │  │  Scam Patterns (27+ seeds)  │ │
-│  │  PostgreSQL  │  │  Users, Sessions, Txns       │ │
-│  └──────────────┘  └──────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## How the Agentic Loop Works
-
-```
-User sends message
-        │
-        ▼
-┌─── PERCEIVE ────┐
-│ Read message     │
-│ Load session     │
-│ Check transaction│
-└────────┬─────────┘
-         │
-         ▼
-┌──── REASON ─────┐
-│ ScamDetector:    │
-│  • Gemini AI     │
-│  • Keyword match │
-│ RiskScorer:      │
-│  • 6 factors     │
-└────────┬─────────┘
-         │
-         ▼
-┌───── ACT ───────┐
-│ LOW → Allow      │
-│ MED → Ask ques   │
-│ HIGH → Alert     │
-│ CRIT → Recovery  │
-└────────┬─────────┘
-         │
-         ▼
-┌──── LEARN ──────┐
-│ Log pattern      │
-│ Update DB        │
-└──────────────────┘
-```
+Expected: **34 tests passed** covering agent behaviour, scam detection, and flow state machine.
 
 ---
 
 ## API Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check — returns service status |
-| GET | `/webhook/whatsapp` | WhatsApp webhook verification (hub.challenge) |
+|---|---|---|
+| GET | `/` | Demo web UI |
+| GET | `/health` | Health check |
+| GET | `/webhook/whatsapp` | WhatsApp webhook verification |
 | POST | `/webhook/whatsapp` | Receive incoming WhatsApp messages |
-| POST | `/api/transaction/initiate` | Simulated UPI payment hook (triggers detection) |
-| POST | `/demo` | Run full Meena demo scenario automatically |
+| POST | `/api/transaction/initiate` | Simulate UPI payment interception |
+| POST | `/api/chat` | Chat endpoint for demo UI |
+| POST | `/api/setup-demo` | Set up a demo user with trusted contact |
+| POST | `/demo` | Run full Meena scenario end-to-end |
+| GET | `/api/privacy` | Data privacy policy |
 
 ---
 
-## Risk Scoring Factors
+## Architecture
 
-| Factor | Points | Example |
-|--------|--------|---------|
-| New recipient (never transacted) | +30 | First time sending to this UPI ID |
-| Amount > ₹10,000 | +20 | ₹15,000 transfer |
-| Amount > ₹50,000 | +40 | ₹60,000 transfer |
-| Within 30 min of incoming call | +25 | Scammer just called |
-| Late night (11 PM - 6 AM) | +10 | 2 AM transaction |
-| User age > 50 | +15 | Elderly user |
-| First-time digital user | +20 | New to UPI |
-
-**Risk Levels:**
-- 0-25: LOW → Allow transaction
-- 26-50: MEDIUM → Ask clarifying questions
-- 51-75: HIGH → Alert trusted contact
-- 76-100: CRITICAL → Immediate recovery flow
-
----
-
-## Scam Patterns Detected (27+ patterns)
-
-| Category | Example | Languages |
-|----------|---------|-----------|
-| Digital Arrest | "You are under digital arrest, stay on video call" | en, hi |
-| Authority Impersonation | Fake CBI/Police/RBI/Court officers | en, hi, te, ta |
-| KYC Fraud | "Your KYC expired, account will be frozen" | en, hi |
-| Financial Demand | OTP requests, processing fees, fine payments | en, hi |
-| Isolation | "Don't tell anyone, confidential investigation" | en, hi |
-| Urgency | "Only 10 minutes or arrest warrant issued" | en, hi |
-| Lottery/Prize | "You won ₹25 lakh, pay ₹5000 processing fee" | en, hi |
-| Fake Job | "Work from home, invest ₹10,000 first" | en, hi |
-
----
-
-## Environment Variables
-
-| Variable | Description | Required? |
-|----------|-------------|-----------|
-| `GEMINI_API_KEY` | Google Gemini API key (FREE) | No — keyword fallback works |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API key (paid) | No — Gemini or fallback used |
-| `WHATSAPP_ACCESS_TOKEN` | Meta WhatsApp token | No — logs to console |
-| `WHATSAPP_PHONE_NUMBER_ID` | WhatsApp sender ID | No — logs to console |
-| `WHATSAPP_VERIFY_TOKEN` | Webhook verification | No — defaults to kavach_verify_2024 |
-| `TWILIO_ACCOUNT_SID` | Twilio SID | No — logs to console |
-| `TWILIO_AUTH_TOKEN` | Twilio auth | No — logs to console |
-| `TWILIO_PHONE_NUMBER` | Twilio sender | No — logs to console |
-| `BHASHINI_API_KEY` | BHASHINI key | No — uses pre-translated strings |
-| `BHASHINI_USER_ID` | BHASHINI user | No — uses pre-translated strings |
-| `DATABASE_URL` | DB connection | No — defaults to SQLite |
-
-**Important: The entire prototype runs without ANY API keys.** All external services degrade gracefully — messages are logged to console, scam detection uses keyword matching, translations use pre-built strings in 5 languages.
-
----
-
-## Verifying What Actually Happens (not just what's claimed)
-
-Each core claim below can be checked directly rather than taken on faith:
-
-**Trusted contact alert** — run the server with `--reload` and watch the terminal while
-triggering a HIGH/CRITICAL scenario. Look for `Alert sent via WhatsApp to trusted contact ...`
-in the logs. Without real `WHATSAPP_ACCESS_TOKEN`/`TWILIO_ACCOUNT_SID` values in `.env`, the
-alert payload is correctly built and logged but not physically delivered — add real
-credentials to see it land on an actual phone.
-
-**Cybercrime complaint filing** — this is an auto-**generated**, ready-to-file template
-(name, amount, date, risk score, victim statement), not an auto-**submission** — there's no
-integration with the cybercrime.gov.in portal's API. Check the `recovery_messages` field in
-`/api/chat`'s JSON response, or the chat UI, after a CRITICAL flow completes.
-
-**Transaction blocking** — check the DB directly after a CRITICAL flow:
-```bash
-python3 -c "import sqlite3; print(sqlite3.connect('kavach.db').execute(\
-  'SELECT id, amount, status, risk_score FROM transactions ORDER BY id DESC LIMIT 3').fetchall())"
 ```
-You should see `status: BLOCKED`. This blocks the transaction within Kavach's own tracking —
-per the table above, the UPI hook itself is simulated, not a live payment rail integration.
+USER (WhatsApp / Web UI)
+         │
+         ▼
+FastAPI Backend (main.py)
+         │
+    ┌────┴─────────────────────┐
+    │      AGENT LAYER         │
+    │  PERCEIVE → REASON       │
+    │     → ACT → LEARN        │
+    │                          │
+    │  ScamDetector            │
+    │  RiskScorer              │
+    │  KavachAgent             │
+    └────┬─────────────────────┘
+         │
+    ┌────┴─────────────────────┐
+    │   INTEGRATION LAYER      │
+    │  Groq / Gemini / Claude  │
+    │  WhatsApp Business API   │
+    │  Twilio SMS (fallback)   │
+    │  BHASHINI (translation)  │
+    └────┬─────────────────────┘
+         │
+    ┌────┴─────────────────────┐
+    │      DATA LAYER          │
+    │  SQLite / PostgreSQL     │
+    │  27+ Scam Patterns       │
+    └──────────────────────────┘
+```
 
 ---
 
-## Note for Judges: WhatsApp API Token
+## How the 3-Step Flow Works
 
-The WhatsApp Business Cloud API uses a **temporary access token** that expires every 24 hours. If you're testing live WhatsApp delivery and the token has expired:
+```
+Step 1 — DETECT
+UPI payment initiated → Kavach intercepts
+→ Risk scorer evaluates (amount, recipient, user age, timing)
+→ Sends question in user's language:
+  "Kya aapko kisi ne is payment ke liye force kiya hai?"
 
-1. Go to https://developers.facebook.com/apps → Select "Kavach2" app
-2. Navigate to: Use cases → Customize → API Setup
-3. Click **"Generate access token"** to get a fresh token
-4. Update the `WHATSAPP_ACCESS_TOKEN` environment variable
+Step 2 — BREAK ISOLATION
+User replies "Haan" / "Yes"
+→ Kavach silently alerts trusted contact via WhatsApp:
+  "Your mother is about to transfer ₹40,000 under pressure. Call NOW."
+→ Trusted contact calls → scam breaks
 
-**If you don't want to set up WhatsApp credentials:**
-- The prototype works fully without them
-- Messages are logged to the server console instead of being sent
-- All detection, risk scoring, alerting logic, and recovery flows execute normally
-- The web UI at the root URL (/) demonstrates the full flow visually
-
-**Why a temporary token?** Meta's WhatsApp Cloud API issues 24-hour tokens for test mode. In production, a permanent System User token would be configured. This is standard Meta developer workflow, not a limitation of our code.
+Step 3 — RECOVER
+→ Calming message to user in their language
+→ 6-step recovery guide
+→ Pre-filled cybercrime.gov.in complaint template
+→ 1930 helpline instructions
+→ Transaction marked BLOCKED
+```
 
 ---
 
-## API & Technology Stack (as per original design)
+## Risk Scoring
 
-| Technology | Status | Notes |
-|-----------|--------|-------|
-| WhatsApp Business API | LIVE | Meta Cloud API v18.0, test credentials active |
-| Groq / Google Gemini / Claude AI | LIVE (cascading) | Tries Groq first (fast, free tier), falls back to Gemini, then Claude, then keyword matching — see `app/integrations/claude_client.py` |
-| BHASHINI API | IMPLEMENTED (fallback mode) | Code complete, uses pre-translated strings for 5 languages when key not set |
-| Twilio SMS | IMPLEMENTED (fallback mode) | Code complete, logs to console when credentials not set |
-| UPI Intent Hook | SIMULATED | `/api/transaction/initiate` simulates real UPI interception |
-| I4C Scam Patterns | LIVE | 27 patterns seeded from public domain data |
+| Factor | Score |
+|---|---|
+| New / unknown recipient | +30 |
+| Amount > ₹10,000 | +20 |
+| Amount > ₹50,000 | +40 |
+| Transaction within 30 min of call | +25 |
+| Late night (11 PM – 6 AM) | +10 |
+| User age > 50 | +15 |
+| First-time digital user | +20 |
 
-All 6 technologies from the original design are implemented. WhatsApp and Gemini are live with real credentials. BHASHINI and Twilio gracefully fall back to mock mode — zero code changes needed to activate them with real keys.
+| Score | Risk Level | Action |
+|---|---|---|
+| 0–25 | LOW | Allow |
+| 26–50 | MEDIUM | Ask clarifying question |
+| 51–75 | HIGH | Alert trusted contact |
+| 76–100 | CRITICAL | Immediate recovery flow |
 
 ---
 
@@ -508,44 +282,8 @@ All 6 technologies from the original design are implemented. WhatsApp and Gemini
 
 ```bash
 docker-compose up --build
-# Server available at http://localhost:8000
-# Then run any test case above
+# App available at http://localhost:8000
 ```
-
----
-
-## Note on WhatsApp Integration
-
-WhatsApp Business Cloud API is **fully integrated and live** with real message delivery. The system sends interactive buttons and list messages — users just tap, no typing needed.
-
-**WhatsApp token expires every 24 hours** (Meta's standard for test mode). To regenerate:
-1. Go to developers.facebook.com → Kavach2 app → API Setup
-2. Click "Generate access token"
-3. Update `WHATSAPP_ACCESS_TOKEN` in Vercel environment variables
-4. Redeploy
-
-In production, a permanent System User token would be used (no daily regeneration).
-
----
-
-## Open-Source Attribution
-
-| Library | Version | License | Role in Build | Source Link |
-|---------|---------|---------|---------------|-------------|
-| FastAPI | 0.111.0 | MIT | Web framework and API routing | https://github.com/tiangolo/fastapi |
-| Anthropic Python SDK | 0.28.0 | MIT | Claude LLM integration for scam detection | https://github.com/anthropic-ai/anthropic-sdk-python |
-| Google Gemini API | N/A | Google ToS (free tier) | Primary LLM for scam detection | https://aistudio.google.com |
-| SQLAlchemy | 2.0.30 | MIT | ORM for database models | https://github.com/sqlalchemy/sqlalchemy |
-| Twilio Python SDK | 9.2.3 | MIT | SMS fallback notifications | https://github.com/twilio/twilio-python |
-| Pydantic | 2.7.4 | MIT | Data validation and settings | https://github.com/pydantic/pydantic |
-| httpx | 0.27.0 | BSD | Async HTTP client for API calls | https://github.com/encode/httpx |
-| loguru | 0.7.2 | MIT | Structured logging | https://github.com/Delgan/loguru |
-| pytest | 8.2.2 | MIT | Testing framework | https://github.com/pytest-dev/pytest |
-| aiosqlite | 0.20.0 | MIT | Async SQLite driver | https://github.com/omnilib/aiosqlite |
-| uvicorn | 0.30.1 | BSD | ASGI server | https://github.com/encode/uvicorn |
-| BHASHINI ULCA API | N/A | Govt of India (open access) | Multilingual translation | https://bhashini.gov.in |
-| WhatsApp Business Cloud API | N/A | Meta Platform ToS | Primary user interface | https://developers.facebook.com/docs/whatsapp |
-| I4C Scam Pattern Data | N/A | Public Domain | Scam pattern seeding | https://www.cybercrime.gov.in |
 
 ---
 
@@ -554,41 +292,43 @@ In production, a permanent System User token would be used (no daily regeneratio
 ```
 kavach2/
 ├── app/
-│   ├── main.py                  # FastAPI app with all routes
-│   ├── config.py                # Pydantic BaseSettings
+│   ├── main.py                   # FastAPI app, all routes
+│   ├── config.py                 # Pydantic settings (reads .env)
 │   ├── agent/
-│   │   ├── kavach_agent.py      # Main orchestrator (PERCEIVE→REASON→ACT→LEARN)
-│   │   ├── scam_detector.py     # Gemini/Claude AI + keyword fallback detection
-│   │   ├── risk_scorer.py       # Multi-factor transaction risk scoring
-│   │   └── recovery_agent.py    # Post-fraud recovery guidance
+│   │   ├── kavach_agent.py       # Main agentic loop (PERCEIVE→REASON→ACT→LEARN)
+│   │   ├── scam_detector.py      # AI + keyword-based scam detection
+│   │   ├── risk_scorer.py        # Multi-factor risk scoring
+│   │   └── recovery_agent.py     # Recovery guidance generation
 │   ├── flows/
-│   │   ├── detect_flow.py       # Multi-turn detection state machine
-│   │   ├── alert_flow.py        # Trusted contact alert (WhatsApp + SMS)
-│   │   └── recovery_flow.py     # 6-step recovery orchestration
+│   │   ├── detect_flow.py        # Multi-turn detection state machine
+│   │   ├── alert_flow.py         # Trusted contact alert (WhatsApp + SMS)
+│   │   └── recovery_flow.py      # 6-step recovery orchestration
 │   ├── integrations/
-│   │   ├── whatsapp.py          # Meta WhatsApp Cloud API v18.0
-│   │   ├── twilio_sms.py        # Twilio SMS fallback
-│   │   ├── bhashini.py          # BHASHINI ULCA translation
-│   │   └── claude_client.py     # Gemini (free) + Claude (paid) with retry
+│   │   ├── whatsapp.py           # Meta WhatsApp Cloud API v18.0
+│   │   ├── twilio_sms.py         # Twilio SMS fallback
+│   │   ├── bhashini.py           # BHASHINI multilingual translation
+│   │   └── claude_client.py      # Groq → Gemini → Claude cascading client
 │   ├── models/
-│   │   ├── transaction.py       # Transaction ORM + Pydantic schemas
-│   │   ├── user.py              # User profile model
-│   │   └── session.py           # Conversation session with state machine
+│   │   ├── transaction.py        # Transaction model + Pydantic schemas
+│   │   ├── user.py               # User profile model
+│   │   └── session.py            # Conversation session + state machine
 │   ├── db/
-│   │   ├── database.py          # Async SQLAlchemy engine setup
-│   │   └── scam_patterns.py     # Pattern storage and seeding
+│   │   ├── database.py           # Async SQLAlchemy setup
+│   │   └── scam_patterns.py      # Pattern seeding (27 patterns)
 │   └── utils/
-│       ├── language_utils.py    # Multilingual helpers (5 languages)
-│       └── complaint_template.py # Cybercrime.gov.in complaint generator
+│       ├── language_utils.py     # Multilingual helpers (5 languages)
+│       └── complaint_template.py # Complaint generator
 ├── tests/
-│   ├── test_agent.py            # Agent behavior tests (7 tests)
-│   ├── test_detector.py         # Scam detection tests (16 tests)
-│   └── test_flows.py            # State machine tests (11 tests)
+│   ├── test_agent.py             # 7 agent behaviour tests
+│   ├── test_detector.py          # 16 scam detection tests
+│   └── test_flows.py             # 11 state machine tests
 ├── data/
-│   └── scam_patterns.json       # 27 seed patterns across 6 categories
+│   └── scam_patterns.json        # 27 seed scam patterns
 ├── api/
-│   └── index.py                 # Vercel serverless entry point
-├── .env.example
+│   └── index.py                  # Vercel serverless entry point
+├── static/
+│   └── index.html                # Demo web UI
+├── .env.example                  # Template — copy to .env and fill in keys
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
@@ -598,10 +338,37 @@ kavach2/
 
 ---
 
-## License
+## Open-Source Attribution
 
-Built for ScriptedBy{Her} 2.0 (Meesho) by Bhavana R (Team Bloom).
+| Library | Version | License | Role in Build | Source |
+|---|---|---|---|---|
+| FastAPI | ≥0.100.0 | MIT | Web framework and API routing | [github.com/tiangolo/fastapi](https://github.com/tiangolo/fastapi) |
+| Anthropic Python SDK | ≥0.20.0 | MIT | Claude LLM integration | [github.com/anthropics/anthropic-sdk-python](https://github.com/anthropics/anthropic-sdk-python) |
+| Google Generative AI SDK | ≥0.5.0 | Apache 2.0 | Gemini LLM integration | [github.com/google-gemini/generative-ai-python](https://github.com/google-gemini/generative-ai-python) |
+| Groq Python SDK | latest | MIT | Groq LLM integration (primary AI) | [github.com/groq/groq-python](https://github.com/groq/groq-python) |
+| SQLAlchemy | ≥2.0.0 | MIT | ORM for all database models | [github.com/sqlalchemy/sqlalchemy](https://github.com/sqlalchemy/sqlalchemy) |
+| aiosqlite | ≥0.19.0 | MIT | Async SQLite driver | [github.com/omnilib/aiosqlite](https://github.com/omnilib/aiosqlite) |
+| Twilio Python SDK | ≥8.0.0 | MIT | SMS fallback notifications | [github.com/twilio/twilio-python](https://github.com/twilio/twilio-python) |
+| Pydantic | ≥2.0.0 | MIT | Data validation and settings | [github.com/pydantic/pydantic](https://github.com/pydantic/pydantic) |
+| pydantic-settings | ≥2.0.0 | MIT | Environment variable management | [github.com/pydantic/pydantic-settings](https://github.com/pydantic/pydantic-settings) |
+| httpx | ≥0.24.0 | BSD | Async HTTP client for API calls | [github.com/encode/httpx](https://github.com/encode/httpx) |
+| loguru | ≥0.7.0 | MIT | Structured logging throughout | [github.com/Delgan/loguru](https://github.com/Delgan/loguru) |
+| uvicorn | ≥0.22.0 | BSD | ASGI server | [github.com/encode/uvicorn](https://github.com/encode/uvicorn) |
+| pytest | ≥7.0.0 | MIT | Testing framework | [github.com/pytest-dev/pytest](https://github.com/pytest-dev/pytest) |
+| pytest-asyncio | ≥0.21.0 | Apache 2.0 | Async test support | [github.com/pytest-dev/pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) |
+| WhatsApp Business Cloud API | v18.0 | Meta Platform ToS | Primary user interface | [developers.facebook.com/docs/whatsapp](https://developers.facebook.com/docs/whatsapp) |
+| BHASHINI ULCA API | — | Govt of India (open access) | Multilingual translation | [bhashini.gov.in](https://bhashini.gov.in) |
+| I4C Scam Pattern Data | — | Public Domain | Scam pattern library seed data | [cybercrime.gov.in](https://www.cybercrime.gov.in) |
 
 ---
 
-*Kavach 2.0 — Because Protection Should Be Where the People Are* 🛡️
+## Built For
+
+ScriptedBy{Her} 2.0 — Meesho Women-Only Hackathon
+Theme: Building for Bharat with Agentic AI
+
+*Team Bloom · Bhavana R · IIT Gandhinagar*
+
+---
+
+*Kavach 2.0 — Because protection should be where the people are* 🛡️
