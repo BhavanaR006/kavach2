@@ -455,6 +455,7 @@ async def run_demo():
             session=session,
             transaction=transaction,
             user=user,
+            db=db,
         )
 
         # Send the scam type question to user
@@ -467,6 +468,7 @@ async def run_demo():
             session=session,
             transaction=transaction,
             user=user,
+            db=db,
         )
 
         # Step 6: Execute recovery flow (AGENTIC — all autonomous from here)
@@ -544,6 +546,7 @@ async def chat_endpoint(request: Request):
             session=session,
             transaction=transaction,
             user=user,
+            db=db,
         )
 
         # Build WhatsApp API payload preview (what would actually be sent)
@@ -700,6 +703,24 @@ async def setup_demo_user(request: Request):
         user.is_first_time_user = True
         user.trusted_contact_phone = "+918888888888"
         user.trusted_contact_name = "Trusted Contact"
+
+        # Reset any leftover session/transaction from a previous demo run
+        # on this phone number, so every "Run Full Demo" click starts clean
+        # instead of resuming whatever state the last run ended in.
+        stale_sessions = await db.execute(
+            select(ConversationSession).where(ConversationSession.user_phone == phone)
+        )
+        for old_session in stale_sessions.scalars().all():
+            old_session.state = SessionState.RESOLVED.value
+
+        stale_txns = await db.execute(
+            select(Transaction)
+            .where(Transaction.user_phone == phone)
+            .where(Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.FLAGGED]))
+        )
+        for old_txn in stale_txns.scalars().all():
+            old_txn.status = TransactionStatus.COMPLETED
+
         await db.commit()
 
     return {"status": "ok", "phone": phone, "language": language}

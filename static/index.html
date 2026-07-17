@@ -234,7 +234,6 @@ function buildRiskCard(data) {
   if (data.scam_type) details += `<strong>Type:</strong> ${data.scam_type}<br>`;
   if (data.message || data.warning) details += `${data.message || data.warning}<br>`;
   if (data.indicators && data.indicators.length) details += `<strong>Indicators:</strong> ${data.indicators.join(', ')}`;
-  if (data.response) details += data.response;
 
   return `<div class="risk-card ${risk}">
     <div class="risk-header">
