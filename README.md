@@ -445,6 +445,31 @@ User sends message
 
 ---
 
+## Verifying What Actually Happens (not just what's claimed)
+
+Each core claim below can be checked directly rather than taken on faith:
+
+**Trusted contact alert** — run the server with `--reload` and watch the terminal while
+triggering a HIGH/CRITICAL scenario. Look for `Alert sent via WhatsApp to trusted contact ...`
+in the logs. Without real `WHATSAPP_ACCESS_TOKEN`/`TWILIO_ACCOUNT_SID` values in `.env`, the
+alert payload is correctly built and logged but not physically delivered — add real
+credentials to see it land on an actual phone.
+
+**Cybercrime complaint filing** — this is an auto-**generated**, ready-to-file template
+(name, amount, date, risk score, victim statement), not an auto-**submission** — there's no
+integration with the cybercrime.gov.in portal's API. Check the `recovery_messages` field in
+`/api/chat`'s JSON response, or the chat UI, after a CRITICAL flow completes.
+
+**Transaction blocking** — check the DB directly after a CRITICAL flow:
+```bash
+python3 -c "import sqlite3; print(sqlite3.connect('kavach.db').execute(\
+  'SELECT id, amount, status, risk_score FROM transactions ORDER BY id DESC LIMIT 3').fetchall())"
+```
+You should see `status: BLOCKED`. This blocks the transaction within Kavach's own tracking —
+per the table above, the UPI hook itself is simulated, not a live payment rail integration.
+
+---
+
 ## Note for Judges: WhatsApp API Token
 
 The WhatsApp Business Cloud API uses a **temporary access token** that expires every 24 hours. If you're testing live WhatsApp delivery and the token has expired:
@@ -469,7 +494,7 @@ The WhatsApp Business Cloud API uses a **temporary access token** that expires e
 | Technology | Status | Notes |
 |-----------|--------|-------|
 | WhatsApp Business API | LIVE | Meta Cloud API v18.0, test credentials active |
-| Google Gemini / Claude AI | LIVE | Gemini free tier for scam detection |
+| Groq / Google Gemini / Claude AI | LIVE (cascading) | Tries Groq first (fast, free tier), falls back to Gemini, then Claude, then keyword matching — see `app/integrations/claude_client.py` |
 | BHASHINI API | IMPLEMENTED (fallback mode) | Code complete, uses pre-translated strings for 5 languages when key not set |
 | Twilio SMS | IMPLEMENTED (fallback mode) | Code complete, logs to console when credentials not set |
 | UPI Intent Hook | SIMULATED | `/api/transaction/initiate` simulates real UPI interception |

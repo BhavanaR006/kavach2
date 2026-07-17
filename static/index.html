@@ -338,6 +338,12 @@ async function runSelectedScenario() {
     addMsg('bot', chatRes.response || chatRes.message || JSON.stringify(chatRes));
     if (chatRes.should_alert_contact) showBanner('alert', '\uD83D\uDEA8 Trusted Contact Alerted — Emergency notification sent');
     if (chatRes.should_start_recovery) showBanner('recovery', '\u2705 Recovery Flow Started — Automated complaint filed');
+    if (Array.isArray(chatRes.recovery_messages)) {
+      for (const step of chatRes.recovery_messages) {
+        addMsg('bot', step);
+        await sleep(300);
+      }
+    }
   }
 
   // Final status
@@ -372,6 +378,12 @@ async function sendChat() {
     }
     if (res.should_alert_contact) showBanner('alert', '\uD83D\uDEA8 Trusted Contact Alerted');
     if (res.should_start_recovery) showBanner('recovery', '\u2705 Recovery Flow Started');
+    if (Array.isArray(res.recovery_messages)) {
+      for (const step of res.recovery_messages) {
+        addMsg('bot', step);
+        await sleep(300);
+      }
+    }
   }
 }
 

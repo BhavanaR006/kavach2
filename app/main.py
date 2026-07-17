@@ -368,21 +368,22 @@ async def initiate_transaction(request: Request):
         transaction.risk_level = risk.risk_level.value
         transaction.status = TransactionStatus.FLAGGED
 
-        # Set session to await language selection
-        session.state = SessionState.AWAITING_LANGUAGE.value
+        # Set session state to QUESTIONING and ask the real detection
+        # question directly. This REST/demo path (unlike the WhatsApp
+        # webhook) never does a separate language-selection round trip —
+        # the caller already specifies language — so we must not leave the
+        # session in AWAITING_LANGUAGE: a reply arriving in that state was
+        # being run through raw scam-detection on bare text like "1"/"2"
+        # instead of being interpreted as an answer, which is what caused
+        # risk scores to escalate unpredictably on every demo run.
+        session.state = SessionState.QUESTIONING.value
         session.risk_score = risk.total_score
         session.risk_level = risk.risk_level.value
 
-        # Send language selection buttons
-        await whatsapp_client.send_buttons(
-            to=user_phone,
-            body=f"Kavach detected a risky transaction (Rs {amount:,.0f} to unknown account). Please select your language:",
-            buttons=[
-                {"id": "lang_hi", "title": "Hindi"},
-                {"id": "lang_en", "title": "English"},
-                {"id": "lang_te", "title": "Telugu"},
-            ],
-        )
+        from app.utils.language_utils import get_transaction_question
+        question = get_transaction_question(user.language_preference, amount)
+        session.add_message("agent", question)
+        await whatsapp_client.send_message(to=user_phone, message=question)
 
         await db.commit()
 
@@ -391,8 +392,9 @@ async def initiate_transaction(request: Request):
             "transaction_id": transaction.id,
             "risk_score": risk.total_score,
             "risk_level": risk.risk_level.value,
-            "action": "AWAITING_LANGUAGE",
-            "message_sent": "Language selection sent to user via WhatsApp",
+            "action": "QUESTION",
+            "message": question,
+            "message_sent": "Detection question sent to user via WhatsApp",
         }
 
 
@@ -549,6 +551,23 @@ async def chat_endpoint(request: Request):
             db=db,
         )
 
+        # These were previously left as flags only — the banner would show
+        # in the demo UI but no alert/recovery actually ran. Wire them to
+        # the same flows /demo already uses successfully.
+        recovery_messages: list[str] = []
+        if response.should_alert_contact and transaction is not None:
+            from app.agent.scam_detector import DetectionResult as _DetectionResult
+            await alert_flow.send_trusted_alert(
+                user=user,
+                transaction=transaction,
+                risk=_DetectionResult(
+                    risk_score=response.risk_score, risk_level=response.risk_level
+                ),
+            )
+
+        if response.should_start_recovery and transaction is not None:
+            recovery_messages = await recovery_flow.execute(session, user, transaction)
+
         # Build WhatsApp API payload preview (what would actually be sent)
         whatsapp_payload = {
             "messaging_product": "whatsapp",
@@ -566,6 +585,7 @@ async def chat_endpoint(request: Request):
             "risk_score": response.risk_score,
             "should_alert_contact": response.should_alert_contact,
             "should_start_recovery": response.should_start_recovery,
+            "recovery_messages": recovery_messages,
             "session_state": session.state,
             "whatsapp_payload_preview": whatsapp_payload,
         }
@@ -642,6 +662,7 @@ async def _get_active_session(
         SessionState.TRANSACTION_DETECTED,
         SessionState.QUESTIONING,
         SessionState.AWAITING_SCAM_TYPE,
+        SessionState.CONFIRMED_RISK,
         SessionState.RECOVERY_IN_PROGRESS,
     ]
 
