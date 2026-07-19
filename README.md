@@ -9,21 +9,178 @@
 
 ---
 
-## Quick Start (30 seconds)
+## Quick Start (2 minutes)
 
-1. Get a FREE Groq API key at https://console.groq.com (or Gemini at https://aistudio.google.com/apikey)
-2. Clone: `git clone https://github.com/BhavanaR006/kavach2.git && cd kavach2`
-3. Create `.env` file and add: `GROQ_API_KEY=your_key_here`
-4. Run: `pip install -r requirements.txt && uvicorn app.main:app --reload`
-5. Open http://localhost:8000 — you will see a 4-step guided flow:
-   1. Enter your details and trusted contact number
-   2. Select your UPI app
-   3. Enter payment details
-   4. Watch Kavach protect you in real time — if high risk is detected, you will be guided through recovery and provided a complaint letter and bank notification to use immediately.
+```bash
+git clone https://github.com/BhavanaR006/kavach2.git
+cd kavach2
+python -m venv venv
+source venv/bin/activate        # macOS/Linux
+# OR: venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+cp .env.example .env            # then fill in your keys (see below)
+uvicorn app.main:app --reload --port 8000
+```
 
-**Works with ZERO API keys too** — uses keyword-based detection as fallback.
+Open **http://localhost:8000** — you will see a 4-step guided flow:
+1. Enter your details and trusted contact number
+2. Select your UPI app (PhonePe / GPay / Paytm / BHIM)
+3. Enter payment details
+4. Watch Kavach protect you in real time
 
-> **Note:** We originally planned to use Google Gemini API but switched to Groq (LLaMA 3.1) due to Gemini's aggressive free-tier rate limiting (15 req/min, frequently 429 errors). Groq provides 30 req/min with sub-second responses and no rate limit issues.
+**Works with ZERO API keys** — uses keyword-based detection as fallback. Add keys only for live AI + WhatsApp delivery.
+
+> **Note:** We originally planned to use Google Gemini API but switched to Groq (LLaMA 3.1) due to Gemini's aggressive free-tier rate limiting (15 req/min, frequent 429 errors). Groq provides 30 req/min with sub-second responses and zero rate limit issues.
+
+---
+
+## API Keys — Complete Setup Guide
+
+All keys are optional. The app runs fully without any of them. Add keys to unlock live AI detection and real WhatsApp delivery.
+
+### 1. Groq API Key (FREE — Recommended, Primary AI)
+> Fastest LLM, free, 30 req/min. This is the primary AI backend.
+
+1. Go to → https://console.groq.com/keys
+2. Sign up (free) → Create API Key → Copy it
+3. Add to `.env`: `GROQ_API_KEY=gsk_xxxxxxxxxxxx`
+
+---
+
+### 2. Gemini API Key (FREE — Fallback AI)
+> Used if Groq is not configured or fails.
+
+1. Go to → https://aistudio.google.com/apikey
+2. Click "Create API Key" → Copy it
+3. Add to `.env`: `GEMINI_API_KEY=AIzaSyxxxxxxxxxx`
+
+---
+
+### 3. Anthropic Claude API Key (Paid — Last Resort AI)
+> Only used if both Groq and Gemini fail.
+
+1. Go to → https://console.anthropic.com
+2. API Keys → Create Key → Copy it
+3. Add to `.env`: `ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxx`
+
+> If you only want free keys: set Groq + Gemini and leave this blank.
+
+---
+
+### 4. WhatsApp Business API (Meta) — For Live WhatsApp Messages
+
+> ⚠️ **The WhatsApp access token expires every 24 hours in test/dev mode. You MUST regenerate it daily before testing live delivery.**
+
+**Step 1 — Get your token and Phone Number ID:**
+1. Go to → https://developers.facebook.com/apps
+2. Select your app (or create one: Business type → WhatsApp product)
+3. Navigate to: **WhatsApp → API Setup**
+4. You will see:
+   - **Temporary access token** — copy this (valid 24 hours only)
+   - **Phone Number ID** — copy this (permanent, never changes)
+5. Add to `.env`:
+```
+WHATSAPP_ACCESS_TOKEN=EAAxxxxxxxxxx
+WHATSAPP_PHONE_NUMBER_ID=1234567890123456
+WHATSAPP_VERIFY_TOKEN=kavach_verify_2024
+```
+
+**Step 2 — Add your phone as a test recipient:**
+1. Same API Setup page → "Send and receive messages" → "To" → "Manage phone number list"
+2. Add your personal number (+91XXXXXXXXXX)
+3. Verify with WhatsApp OTP
+
+**Step 3 — Set webhook (so user replies reach Kavach):**
+1. WhatsApp → Configuration → Webhook
+2. Callback URL: `https://kavach2-theta.vercel.app/webhook/whatsapp`
+3. Verify token: `kavach_verify_2024`
+4. Subscribe to: `messages`
+
+**How to regenerate the token every day:**
+1. Go to developers.facebook.com → Your App → WhatsApp → API Setup
+2. Click **"Generate access token"**
+3. Copy the new token
+4. Update `WHATSAPP_ACCESS_TOKEN` in `.env` (local) AND in Vercel → Settings → Environment Variables (deployed)
+5. Push to GitHub → Vercel auto-redeploys
+
+> **Why does it expire?** Meta issues 24-hour tokens in test/dev mode. In production, a permanent System User token is used — no daily regeneration needed. This is standard Meta developer workflow.
+
+---
+
+### 5. Twilio SMS (Optional — SMS Fallback)
+> Only activated if WhatsApp delivery fails. Completely optional.
+
+1. Go to → https://console.twilio.com (free trial available)
+2. Copy Account SID, Auth Token, and your Twilio phone number
+3. Add to `.env`:
+```
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxx
+TWILIO_PHONE_NUMBER=+1xxxxxxxxxx
+```
+
+---
+
+### 6. BHASHINI API (Optional — Live Multilingual Translation)
+> Pre-translated strings are used as fallback if this key is not set.
+
+1. Go to → https://bhashini.gov.in/ulca
+2. Register → Apply for API access (Government of India — free, takes 1-2 days approval)
+3. Add to `.env`:
+```
+BHASHINI_API_KEY=xxxxxxxxxxxxxxxx
+BHASHINI_USER_ID=xxxxxxxxxxxxxxxx
+```
+
+---
+
+### Your final `.env` file
+
+```env
+# AI / LLM (Groq is recommended — free and fastest)
+GROQ_API_KEY=gsk_xxxxxxxxxxxx
+GEMINI_API_KEY=AIzaSyxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxx
+
+# WhatsApp — EXPIRES EVERY 24 HOURS, regenerate daily before testing
+WHATSAPP_ACCESS_TOKEN=EAAxxxxxxxxxx
+WHATSAPP_PHONE_NUMBER_ID=1234567890123456
+WHATSAPP_VERIFY_TOKEN=kavach_verify_2024
+
+# Twilio SMS (optional fallback)
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxx
+TWILIO_PHONE_NUMBER=+1xxxxxxxxxx
+
+# BHASHINI (optional — pre-translated strings used if not set)
+BHASHINI_API_KEY=xxxxxxxxxxxxxxxx
+BHASHINI_USER_ID=xxxxxxxxxxxxxxxx
+
+# Database
+DATABASE_URL=sqlite+aiosqlite:///./kavach.db
+
+# App config
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+```
+
+### AI Priority Order (automatic cascading fallback)
+
+```
+1. Groq       — FREE, fastest (~0.5s response, 30 req/min)
+      ↓ if not set or fails
+2. Gemini     — FREE fallback (gemini-2.0-flash)
+      ↓ if not set or fails
+3. Claude     — Paid fallback (claude-sonnet-4-6)
+      ↓ if not set or fails
+4. Keywords   — Always works, zero API key needed
+```
+
+### For Vercel Deployment
+
+Add all keys in: **vercel.com → Your project → Settings → Environment Variables**
+
+> ⚠️ Vercel does NOT show saved keys again after saving. Store them somewhere safe before pasting into Vercel. After updating any key → Deployments → Redeploy.
 
 ---
 
