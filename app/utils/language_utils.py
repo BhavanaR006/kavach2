@@ -312,14 +312,8 @@ SCAM_TYPE_MAP: dict[str, str] = {
 def get_scam_type_question(language: str) -> str:
     """
     Get the scam type question text in user's language, with the
-    numbered options spelled out inline.
-
-    On real WhatsApp, `get_scam_options_for_list()` renders these as a
-    native tappable list. Text-only channels (the REST API, the web
-    demo UI) have no equivalent, so the options must be visible in the
-    message itself or the user has no way to know what to reply with.
-    Only options 1-5 are listed here because those are the only ones
-    SCAM_TYPE_MAP currently maps from a bare number.
+    numbered options spelled out inline (only options 1-5, since those
+    are the only ones SCAM_TYPE_MAP maps from a bare number).
     """
     intro = SCAM_TYPE_QUESTIONS.get(language, SCAM_TYPE_QUESTIONS["en"])
     options = SCAM_OPTIONS_BY_LANG.get(language, SCAM_OPTIONS_BY_LANG["en"])[:5]

@@ -336,9 +336,15 @@ async def initiate_transaction(request: Request):
     """
     body = await request.json()
 
-    # Support both formats
-    user_phone = body.get("user_phone") or body.get("phone", "+919999999999")
-    recipient_phone = body.get("recipient_phone") or body.get("recipient", "+917777777777")
+    # Support both formats and normalize phone numbers
+    user_phone = (body.get("user_phone") or body.get("phone", "9999999999")).replace(" ", "")
+    if not user_phone.startswith("+"):
+        user_phone = "+91" + user_phone
+
+    recipient_phone = (body.get("recipient_phone") or body.get("recipient", "7777777777")).replace(" ", "")
+    if not recipient_phone.startswith("+"):
+        recipient_phone = "+91" + recipient_phone
+
     amount = float(body.get("amount", 40000))
 
     async with async_session_factory() as db:
@@ -371,11 +377,7 @@ async def initiate_transaction(request: Request):
         # Set session state to QUESTIONING and ask the real detection
         # question directly. This REST/demo path (unlike the WhatsApp
         # webhook) never does a separate language-selection round trip —
-        # the caller already specifies language — so we must not leave the
-        # session in AWAITING_LANGUAGE: a reply arriving in that state was
-        # being run through raw scam-detection on bare text like "1"/"2"
-        # instead of being interpreted as an answer, which is what caused
-        # risk scores to escalate unpredictably on every demo run.
+        # the caller already specifies language.
         session.state = SessionState.QUESTIONING.value
         session.risk_score = risk.total_score
         session.risk_level = risk.risk_level.value
@@ -394,6 +396,7 @@ async def initiate_transaction(request: Request):
             "risk_level": risk.risk_level.value,
             "action": "QUESTION",
             "message": question,
+            "response": question,
             "message_sent": "Detection question sent to user via WhatsApp",
         }
 
@@ -457,7 +460,6 @@ async def run_demo():
             session=session,
             transaction=transaction,
             user=user,
-            db=db,
         )
 
         # Send the scam type question to user
@@ -470,7 +472,6 @@ async def run_demo():
             session=session,
             transaction=transaction,
             user=user,
-            db=db,
         )
 
         # Step 6: Execute recovery flow (AGENTIC — all autonomous from here)
@@ -548,13 +549,14 @@ async def chat_endpoint(request: Request):
             session=session,
             transaction=transaction,
             user=user,
-            db=db,
         )
 
-        # These were previously left as flags only — the banner would show
-        # in the demo UI but no alert/recovery actually ran. Wire them to
-        # the same flows /demo already uses successfully.
+        # These were previously left as flags only, with nothing actually
+        # sent. Wire them to the same flows /demo already uses successfully.
         recovery_messages: list[str] = []
+        complaint_letter = None
+        bank_notice = None
+
         if response.should_alert_contact and transaction is not None:
             from app.agent.scam_detector import DetectionResult as _DetectionResult
             await alert_flow.send_trusted_alert(
@@ -567,6 +569,13 @@ async def chat_endpoint(request: Request):
 
         if response.should_start_recovery and transaction is not None:
             recovery_messages = await recovery_flow.execute(session, user, transaction)
+            from app.agent.recovery_agent import recovery_agent
+            complaint_letter = await recovery_agent.generate_complaint_text(
+                session, user, transaction
+            )
+            bank_notice = await recovery_agent.generate_bank_notification(
+                session, user, transaction
+            )
 
         # Build WhatsApp API payload preview (what would actually be sent)
         whatsapp_payload = {
@@ -586,6 +595,8 @@ async def chat_endpoint(request: Request):
             "should_alert_contact": response.should_alert_contact,
             "should_start_recovery": response.should_start_recovery,
             "recovery_messages": recovery_messages,
+            "complaint_letter": complaint_letter,
+            "bank_notice": bank_notice,
             "session_state": session.state,
             "whatsapp_payload_preview": whatsapp_payload,
         }
@@ -712,36 +723,45 @@ async def _get_pending_transaction(
 async def setup_demo_user(request: Request):
     """Set up a demo user with trusted contact for showcase."""
     body = await request.json()
-    phone = body.get("phone", "+919999999999")
-    language = body.get("language", "hi")
+
+    # Extract and normalize phone numbers
+    phone = body.get("phone", "9999999999").replace(" ", "")
+    if not phone.startswith("+"):
+        phone = "+91" + phone
+
+    trusted_phone = body.get("trusted_contact_phone", "8888888888").replace(" ", "")
+    if not trusted_phone.startswith("+"):
+        trusted_phone = "+91" + trusted_phone
+
+    language = body.get("language_preference") or body.get("language", "hi")
     name = body.get("name", "Demo User")
+    trusted_name = body.get("trusted_contact_name", "Trusted Contact")
+
+    # Validate age
+    try:
+        age = int(body.get("age", 30))
+        if age < 1 or age > 100:
+            age = 30
+    except (ValueError, TypeError):
+        age = 30
 
     async with async_session_factory() as db:
         user = await _get_or_create_user(db, phone)
         user.name = name
         user.language_preference = language
-        user.age = 54
-        user.is_first_time_user = True
-        user.trusted_contact_phone = "+918888888888"
-        user.trusted_contact_name = "Trusted Contact"
-
-        # Reset any leftover session/transaction from a previous demo run
-        # on this phone number, so every "Run Full Demo" click starts clean
-        # instead of resuming whatever state the last run ended in.
-        stale_sessions = await db.execute(
-            select(ConversationSession).where(ConversationSession.user_phone == phone)
-        )
-        for old_session in stale_sessions.scalars().all():
-            old_session.state = SessionState.RESOLVED.value
-
-        stale_txns = await db.execute(
-            select(Transaction)
-            .where(Transaction.user_phone == phone)
-            .where(Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.FLAGGED]))
-        )
-        for old_txn in stale_txns.scalars().all():
-            old_txn.status = TransactionStatus.COMPLETED
-
+        user.age = age
+        user.is_first_time_user = True if age > 45 else False
+        user.trusted_contact_phone = trusted_phone
+        user.trusted_contact_name = trusted_name
         await db.commit()
 
-    return {"status": "ok", "phone": phone, "language": language}
+    return {
+        "status": "ok",
+        "user": {
+            "name": name,
+            "phone": phone,
+            "language": language,
+            "trusted_contact_name": trusted_name,
+            "trusted_contact_phone": trusted_phone,
+        },
+    }
