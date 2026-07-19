@@ -110,7 +110,7 @@ All keys are **optional**. The app runs fully without any of them. Add keys to u
 5. Add to `.env`:
 ```
 WHATSAPP_ACCESS_TOKEN=EAAxxxxxxxxxx
-WHATSAPP_PHONE_NUMBER_ID=1234567890123456
+WHATSAPP_PHONE_NUMBER_ID=fill_it_with_yours
 WHATSAPP_VERIFY_TOKEN=kavach_verify_2024
 ```
 
