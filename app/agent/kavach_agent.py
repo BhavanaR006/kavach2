@@ -76,6 +76,20 @@ class KavachAgent:
         # Record the incoming message
         session.add_message("user", message)
 
+        # A resolved case creates a fresh IDLE session with no transaction
+        # attached. Running a closing "thx"/"ok" through full scam-detection
+        # produces a confusing "your transaction appears safe" reply about a
+        # transaction that no longer exists — just acknowledge it instead.
+        if transaction is None and self._is_casual_closing(message):
+            response = AgentResponse(
+                message=self._get_closing_ack(language),
+                action="CONTINUE",
+                risk_level=RiskLevel.LOW,
+                risk_score=0,
+            )
+            session.add_message("agent", response.message)
+            return response
+
         # PERCEIVE: Gather context
         context = self._perceive(session, transaction)
 
@@ -94,6 +108,28 @@ class KavachAgent:
         session.add_message("agent", response.message)
 
         return response
+
+    @staticmethod
+    def _is_casual_closing(message: str) -> bool:
+        """True for short pleasantries/closing words with no scam-relevant content."""
+        closing_words = {
+            "thx", "thanks", "thank you", "ok", "okay", "k", "bye",
+            "dhanyawad", "dhanyavad", "shukriya", "theek hai", "thik hai",
+            "nandri", "ok bye", "got it", "noted",
+        }
+        return message.strip().lower() in closing_words
+
+    @staticmethod
+    def _get_closing_ack(language: str) -> str:
+        """Short acknowledgment for casual closing messages, no risk talk."""
+        acks = {
+            "hi": "🙏 आपका स्वागत है! ज़रूरत पड़ने पर Kavach हमेशा यहाँ है।",
+            "te": "🙏 స్వాగతం! అవసరమైతే Kavach ఎప్పుడూ ఇక్కడ ఉంటుంది.",
+            "ta": "🙏 வரவேற்கிறோம்! தேவைப்பட்டால் Kavach எப்போதும் இங்கே இருக்கும்.",
+            "bn": "🙏 স্বাগতম! প্রয়োজনে Kavach সবসময় এখানে আছে।",
+            "en": "🙏 You're welcome! Kavach is always here if you need us.",
+        }
+        return acks.get(language, acks["en"])
 
     def _perceive(
         self,
