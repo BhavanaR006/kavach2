@@ -173,7 +173,7 @@ ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxx       # optional, paid
 
 # WhatsApp — ⚠️ EXPIRES EVERY 24 HOURS — regenerate daily before testing
 WHATSAPP_ACCESS_TOKEN=EAAxxxxxxxxxx
-WHATSAPP_PHONE_NUMBER_ID=1234567890123456
+WHATSAPP_PHONE_NUMBER_ID=fill_it_with_yours
 WHATSAPP_VERIFY_TOKEN=kavach_verify_2024
 
 # Twilio SMS (optional fallback if WhatsApp fails)
