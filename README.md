@@ -11,14 +11,44 @@
 
 ## Quick Start (30 seconds)
 
-1. Get a FREE Gemini API key at https://aistudio.google.com/apikey
+1. Get a FREE Groq API key at https://console.groq.com (or Gemini at https://aistudio.google.com/apikey)
 2. Clone: `git clone https://github.com/BhavanaR006/kavach2.git && cd kavach2`
-3. Create `.env` file and add: `GEMINI_API_KEY=your_key_here`
+3. Create `.env` file and add: `GROQ_API_KEY=your_key_here`
 4. Run: `pip install -r requirements.txt && uvicorn app.main:app --reload`
-5. Open http://localhost:8000
-6. Click any scenario in the sidebar to see Kavach in action!
+5. Open http://localhost:8000 — you will see a 4-step guided flow:
+   1. Enter your details and trusted contact number
+   2. Select your UPI app
+   3. Enter payment details
+   4. Watch Kavach protect you in real time — if high risk is detected, you will be guided through recovery and provided a complaint letter and bank notification to use immediately.
 
 **Works with ZERO API keys too** — uses keyword-based detection as fallback.
+
+> **Note:** We originally planned to use Google Gemini API but switched to Groq (LLaMA 3.1) due to Gemini's aggressive free-tier rate limiting (15 req/min, frequently 429 errors). Groq provides 30 req/min with sub-second responses and no rate limit issues.
+
+---
+
+## Demo Limitations & Design Decisions
+
+Kavach 2.0 is a hackathon prototype. Some real-world integrations are simulated in the demo UI due to platform API restrictions:
+
+| Feature | Production Vision | Demo Implementation |
+|---|---|---|
+| UPI Integration | Native deep-link into PhonePe / GPay via UPI intent API | Simulated UPI payment screen in demo UI — UPI apps do not expose public payment APIs |
+| Cybercrime Portal | Auto-fill complaint on cybercrime.gov.in | Opens portal in new tab + provides pre-filled complaint letter to copy-paste — portal has no public form submission API |
+| WhatsApp Delivery | Real-time WhatsApp messages to user's phone | WhatsApp Business API fully integrated — token must be regenerated daily in Meta test mode |
+| Bank Freeze | Direct API call to user's bank to freeze transaction | Pre-formatted bank notification letter generated for user to send to their bank manually |
+| BHASHINI Translation | Live API translation for all 5 languages | Pre-translated strings used as fallback — live BHASHINI API key pending govt approval |
+
+These reflect real-world platform restrictions, not concept limitations. In a production deployment with proper partnerships, all of these would be live integrations.
+
+---
+
+### User Flow (4 Steps)
+
+1. **User Onboarding** — Enter personal details and trusted contact
+2. **UPI App Selection** — Choose your payment app (PhonePe, GPay, Paytm, BHIM)
+3. **Payment Screen** — Enter recipient and amount (Kavach monitors in background)
+4. **AI Agent Chat** — Kavach intervenes via WhatsApp-style conversation if risk detected
 
 ---
 

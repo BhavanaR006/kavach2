@@ -336,9 +336,15 @@ async def initiate_transaction(request: Request):
     """
     body = await request.json()
 
-    # Support both formats
-    user_phone = body.get("user_phone") or body.get("phone", "+919999999999")
-    recipient_phone = body.get("recipient_phone") or body.get("recipient", "+917777777777")
+    # Support both formats and normalize phone numbers
+    user_phone = (body.get("user_phone") or body.get("phone", "9999999999")).replace(" ", "")
+    if not user_phone.startswith("+"):
+        user_phone = "+91" + user_phone
+
+    recipient_phone = (body.get("recipient_phone") or body.get("recipient", "7777777777")).replace(" ", "")
+    if not recipient_phone.startswith("+"):
+        recipient_phone = "+91" + recipient_phone
+
     amount = float(body.get("amount", 40000))
 
     async with async_session_factory() as db:
@@ -688,18 +694,45 @@ async def _get_pending_transaction(
 async def setup_demo_user(request: Request):
     """Set up a demo user with trusted contact for showcase."""
     body = await request.json()
-    phone = body.get("phone", "+919999999999")
-    language = body.get("language", "hi")
+
+    # Extract and normalize phone numbers
+    phone = body.get("phone", "9999999999").replace(" ", "")
+    if not phone.startswith("+"):
+        phone = "+91" + phone
+
+    trusted_phone = body.get("trusted_contact_phone", "8888888888").replace(" ", "")
+    if not trusted_phone.startswith("+"):
+        trusted_phone = "+91" + trusted_phone
+
+    language = body.get("language_preference") or body.get("language", "hi")
     name = body.get("name", "Demo User")
+    trusted_name = body.get("trusted_contact_name", "Trusted Contact")
+
+    # Validate age
+    try:
+        age = int(body.get("age", 30))
+        if age < 1 or age > 100:
+            age = 30
+    except (ValueError, TypeError):
+        age = 30
 
     async with async_session_factory() as db:
         user = await _get_or_create_user(db, phone)
         user.name = name
         user.language_preference = language
-        user.age = 54
-        user.is_first_time_user = True
-        user.trusted_contact_phone = "+918888888888"
-        user.trusted_contact_name = "Trusted Contact"
+        user.age = age
+        user.is_first_time_user = True if age > 45 else False
+        user.trusted_contact_phone = trusted_phone
+        user.trusted_contact_name = trusted_name
         await db.commit()
 
-    return {"status": "ok", "phone": phone, "language": language}
+    return {
+        "status": "ok",
+        "user": {
+            "name": name,
+            "phone": phone,
+            "language": language,
+            "trusted_contact_name": trusted_name,
+            "trusted_contact_phone": trusted_phone,
+        },
+    }

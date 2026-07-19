@@ -86,13 +86,21 @@ class RecoveryFlow:
         messages_sent.append(complaint_message)
         session.add_message("agent", "[Complaint template sent]")
 
-        # Step 4: Helpline info
+        # Step 4: Bank notification
+        bank_notice = await recovery_agent.generate_bank_notification(
+            session, user, transaction
+        )
+        await self._send_to_user(user.phone, bank_notice)
+        messages_sent.append(bank_notice)
+        session.add_message("agent", "[Bank notification sent]")
+
+        # Step 5: Helpline info
         helpline = await recovery_agent.get_helpline_message(language)
         await self._send_to_user(user.phone, helpline)
         messages_sent.append(helpline)
         session.add_message("agent", helpline)
 
-        # Step 5: Notify trusted contact
+        # Step 6: Notify trusted contact
         await alert_flow.send_fraud_confirmed_alert(user, transaction)
 
         # Step 6: Mark session as resolved
