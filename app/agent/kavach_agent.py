@@ -9,15 +9,12 @@ from dataclasses import dataclass
 from typing import Optional
 
 from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.session import ConversationSession, SessionState
 from app.models.transaction import Transaction, RiskLevel
 from app.models.user import User
 from app.agent.scam_detector import scam_detector, DetectionResult
 from app.agent.risk_scorer import risk_scorer, TransactionRisk
-from app.db.scam_patterns import ScamPattern, PATTERN_TYPES
 from app.utils.language_utils import (
     get_transaction_question,
     get_followup_question,
@@ -53,7 +50,6 @@ class KavachAgent:
         session: ConversationSession,
         transaction: Optional[Transaction] = None,
         user: Optional[User] = None,
-        db: Optional[AsyncSession] = None,
     ) -> AgentResponse:
         """
         Process an incoming user message through the agentic loop.
@@ -64,9 +60,6 @@ class KavachAgent:
             session: Current conversation session.
             transaction: Associated transaction (if any).
             user: User profile.
-            db: Optional active DB session. When provided, the LEARN phase
-                persists newly-seen high-risk patterns to the scam_patterns
-                table instead of only logging them.
 
         Returns:
             AgentResponse with message, action, and risk assessment.
@@ -76,13 +69,13 @@ class KavachAgent:
         # Record the incoming message
         session.add_message("user", message)
 
-        # A resolved case creates a fresh IDLE session with no transaction
-        # attached. Running a closing "thx"/"ok" through full scam-detection
-        # produces a confusing "your transaction appears safe" reply about a
-        # transaction that no longer exists — just acknowledge it instead.
-        if transaction is None and self._is_casual_closing(message):
+        # When there is no active transaction, the user is either greeting
+        # Kavach or sending a casual message. We should never say
+        # "transaction appears safe" when there is no transaction in progress.
+        # Show a friendly welcome/context message instead.
+        if transaction is None:
             response = AgentResponse(
-                message=self._get_closing_ack(language),
+                message=self._get_no_transaction_message(language),
                 action="CONTINUE",
                 risk_level=RiskLevel.LOW,
                 risk_score=0,
@@ -101,13 +94,62 @@ class KavachAgent:
             detection, session, transaction, user, message, language
         )
 
-        # LEARN: persist newly-seen high-risk patterns for future detection
-        await self._learn(detection, session, language, db)
+        # LEARN: Log pattern for future reference
+        self._learn(detection, session)
 
         # Record agent response
         session.add_message("agent", response.message)
 
         return response
+
+    @staticmethod
+    def _get_no_transaction_message(language: str) -> str:
+        """Friendly welcome shown when no transaction is in progress."""
+        messages = {
+            "hi": (
+                "🛡️ *Kavach 2.0 — AI Fraud Shield*\n\n"
+                "Namaste! Main aapki suraksha ke liye yahan hoon.\n\n"
+                "Jab aap koi UPI payment shuru karenge, main automatically "
+                "us transaction ko check karunga aur agar koi khatra hoga "
+                "toh aapko turant alert karunga.\n\n"
+                "Abhi koi active transaction nahi hai. "
+                "Payment screen pe jaake transaction start karein. 🙏"
+            ),
+            "te": (
+                "🛡️ *Kavach 2.0 — AI Fraud Shield*\n\n"
+                "Namaskaram! Mee suraksha kosam ikkade unnanu.\n\n"
+                "Meeru UPI payment start chesినప్పుడు, aa transaction ni "
+                "automatically check chestanu — risk unte vెంటనే alert chestanu.\n\n"
+                "Ipudu active transaction ledu. "
+                "Payment screen కి వెళ్లి transaction start cheyandi. 🙏"
+            ),
+            "ta": (
+                "🛡️ *Kavach 2.0 — AI Fraud Shield*\n\n"
+                "Vanakkam! Ungal பாதுகாப்பிற்காக இங்கே இருக்கிறேன்.\n\n"
+                "நீங்கள் UPI payment தொடங்கும்போது, அந்த transaction ஐ "
+                "automatically சரிபார்ப்பேன் — ஆபத்து இருந்தால் உடனே alert செய்வேன்.\n\n"
+                "இப்போது active transaction இல்லை. "
+                "Payment screen க்கு சென்று transaction தொடங்குங்கள். 🙏"
+            ),
+            "bn": (
+                "🛡️ *Kavach 2.0 — AI Fraud Shield*\n\n"
+                "Namaskar! Apnar suraksha er jonno ekhane achhi.\n\n"
+                "Aapni jakhon UPI payment shuru korben, sei transaction ti "
+                "automatically check korbo — bipod thakle turontoi alert korbo.\n\n"
+                "Ekhon kono active transaction nei. "
+                "Payment screen e giye transaction shuru korun. 🙏"
+            ),
+            "en": (
+                "🛡️ *Kavach 2.0 — AI Fraud Shield*\n\n"
+                "Hello! I'm here to protect you from digital fraud.\n\n"
+                "When you initiate a UPI payment, I will automatically "
+                "analyze that transaction — if there's any risk, I'll alert "
+                "you and your trusted contact immediately.\n\n"
+                "No active transaction right now. "
+                "Go to the Payment screen to start a transaction. 🙏"
+            ),
+        }
+        return messages.get(language, messages["en"])
 
     @staticmethod
     def _is_casual_closing(message: str) -> bool:
@@ -415,73 +457,19 @@ class KavachAgent:
             should_start_recovery=False,
         )
 
-    async def _learn(
-        self,
-        detection: DetectionResult,
-        session: ConversationSession,
-        language: str,
-        db: Optional[AsyncSession] = None,
-    ) -> None:
+    def _learn(self, detection: DetectionResult, session: ConversationSession) -> None:
         """
-        LEARN phase: persist newly-seen high-risk signals to the scam
-        pattern library so future detections benefit from what this
-        conversation surfaced.
-
-        This is intentionally best-effort: any DB issue is logged and
-        swallowed so a learning failure never breaks the detection flow.
+        LEARN phase: log patterns for future improvement.
 
         Args:
-            detection: Detection result to log/persist.
+            detection: Detection result to log.
             session: Current session for context.
-            language: Language the signal was observed in.
-            db: Active DB session, if available.
         """
-        if detection.risk_score <= 50 or not detection.signals:
-            return
-
-        logger.info(
-            f"[LEARN] High-risk pattern detected: "
-            f"signals={detection.signals}, score={detection.risk_score}"
-        )
-
-        if db is None:
-            return
-
-        try:
-            signal_text = detection.signals[0].strip()
-            if not signal_text:
-                return
-
-            pattern_type = next(
-                (p for p in PATTERN_TYPES if p.lower().split("_")[0] in signal_text.lower()),
-                "AUTHORITY_IMPERSONATION",
+        if detection.risk_score > 50:
+            logger.info(
+                f"[LEARN] High-risk pattern detected: "
+                f"signals={detection.signals}, score={detection.risk_score}"
             )
-
-            # Dedupe: skip if we've already stored this exact signal text
-            # for this language, so repeated demo runs don't spam the table.
-            existing = await db.execute(
-                select(ScamPattern).where(
-                    ScamPattern.pattern_text == signal_text,
-                    ScamPattern.language == language,
-                )
-            )
-            if existing.scalar_one_or_none() is not None:
-                return
-
-            db.add(
-                ScamPattern(
-                    pattern_text=signal_text,
-                    pattern_type=pattern_type,
-                    language=language,
-                    severity=detection.risk_level.value
-                    if hasattr(detection.risk_level, "value")
-                    else str(detection.risk_level),
-                    source="agent_learn",
-                )
-            )
-            await db.flush()
-        except Exception as exc:
-            logger.warning(f"[LEARN] Failed to persist pattern: {exc}")
 
     @staticmethod
     def _get_critical_message(language: str) -> str:

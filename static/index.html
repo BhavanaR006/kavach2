@@ -753,38 +753,63 @@
             chatActions.appendChild(yes);
             chatActions.appendChild(no);
         } else if (data.action === 'ASK_SCAM_TYPE') {
+            // Show a label above the buttons
+            const label = document.createElement('div');
+            label.style.cssText = 'width:100%;text-align:center;font-size:13px;color:#555;margin-bottom:6px;font-weight:600;';
+            label.textContent = '👇 Select what happened to you:';
+            chatActions.appendChild(label);
             const options = [
-                '1️⃣ Digital Arrest', '2️⃣ Fake Police/CBI', '3️⃣ Fake RBI/Bank',
-                '4️⃣ KYC/Aadhaar', '5️⃣ OTP/Money asked'
+                { label: '🚔 Digital Arrest', val: '1' },
+                { label: '👮 Fake Police / CBI', val: '2' },
+                { label: '🏦 Fake RBI / Bank', val: '3' },
+                { label: '📋 KYC / Aadhaar Fraud', val: '4' },
+                { label: '💸 OTP / Money Demanded', val: '5' },
             ];
-            options.forEach((label, i) => {
+            options.forEach((opt) => {
                 const btn = document.createElement('button');
-                btn.textContent = label;
-                btn.onclick = () => sendMessage(String(i + 1));
+                btn.style.cssText = 'width:100%;margin:3px 0;padding:10px 14px;font-size:13px;text-align:left;border-radius:8px;background:#fff3cd;border:1px solid #ffc107;color:#333;cursor:pointer;';
+                btn.textContent = opt.label;
+                btn.onclick = () => {
+                    // Visually highlight selected
+                    chatActions.querySelectorAll('button').forEach(b => b.style.background = '#fff3cd');
+                    btn.style.background = '#ffc107';
+                    btn.style.fontWeight = 'bold';
+                    setTimeout(() => sendMessage(opt.val), 300);
+                };
                 chatActions.appendChild(btn);
             });
         } else if (data.action === 'RECOVERY') {
+            // Show complaint letter as a chat message first
             if (data.complaint_letter) {
                 window._complaintLetter = data.complaint_letter;
+                addMessage('bot', '📄 *Complaint Letter Generated:*\n\n' + data.complaint_letter);
                 const btn = document.createElement('button');
                 btn.className = 'copy-complaint';
+                btn.style.cssText = 'background:#075e54;color:white;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;margin:4px;font-size:13px;';
                 btn.textContent = '📋 Copy Complaint Letter';
                 btn.onclick = () => copyComplaint();
                 chatActions.appendChild(btn);
             }
             if (data.bank_notice) {
                 window._bankNotice = data.bank_notice;
+                addMessage('bot', '🏦 *Bank Notification Generated:*\n\n' + data.bank_notice);
                 const btn = document.createElement('button');
                 btn.className = 'copy-bank';
+                btn.style.cssText = 'background:#1a73e8;color:white;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;margin:4px;font-size:13px;';
                 btn.textContent = '🏦 Copy Bank Notice';
                 btn.onclick = () => copyBankNotice();
                 chatActions.appendChild(btn);
             }
             const portal = document.createElement('button');
-            portal.className = 'danger';
-            portal.textContent = '📋 Open Cybercrime Portal';
+            portal.style.cssText = 'background:#dc3545;color:white;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;margin:4px;font-size:13px;';
+            portal.textContent = '🌐 Open Cybercrime Portal';
             portal.onclick = () => window.open('https://cybercrime.gov.in', '_blank');
             chatActions.appendChild(portal);
+            // Note about portal
+            const note = document.createElement('div');
+            note.style.cssText = 'width:100%;font-size:11px;color:#888;margin-top:6px;text-align:center;';
+            note.textContent = 'Note: Use the complaint letter above to fill in your details on the portal.';
+            chatActions.appendChild(note);
         } else if (data.action === 'SAFE') {
             const btn = document.createElement('button');
             btn.className = 'success';
